@@ -1,6 +1,16 @@
-# Go licenser
+# Go Licenser
 
-Small zero dependency license header checker for Go source files.
+Small zero dependency license header checker for source files. The aim of this project is to provide a common
+binary that can be used to ensure that code source files contain a license header. It's unlikely that this project
+is useful outside of Elastic **_at the current stage_**, but the `licensing` package can be used as a building block.
+
+## Supported Licenses
+
+* Apache 2.0
+
+## Supported languages
+
+* Go
 
 ## Installing
 
