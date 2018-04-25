@@ -22,11 +22,11 @@ import (
 	"crypto/sha1"
 	"flag"
 	"fmt"
-	"go/build"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 )
@@ -126,14 +126,14 @@ func Test_run(t *testing.T) {
 			},
 			want: 1,
 			wantOutput: `
-src/github.com/elastic/go-licenser/testdata/multilevel/doc.go: is missing the license header
-src/github.com/elastic/go-licenser/testdata/multilevel/main.go: is missing the license header
-src/github.com/elastic/go-licenser/testdata/multilevel/sublevel/autogen.go: is missing the license header
-src/github.com/elastic/go-licenser/testdata/multilevel/sublevel/doc.go: is missing the license header
-src/github.com/elastic/go-licenser/testdata/multilevel/sublevel/partial.go: is missing the license header
-src/github.com/elastic/go-licenser/testdata/singlelevel/doc.go: is missing the license header
-src/github.com/elastic/go-licenser/testdata/singlelevel/main.go: is missing the license header
-src/github.com/elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license header
+elastic/go-licenser/testdata/multilevel/doc.go: is missing the license header
+elastic/go-licenser/testdata/multilevel/main.go: is missing the license header
+elastic/go-licenser/testdata/multilevel/sublevel/autogen.go: is missing the license header
+elastic/go-licenser/testdata/multilevel/sublevel/doc.go: is missing the license header
+elastic/go-licenser/testdata/multilevel/sublevel/partial.go: is missing the license header
+elastic/go-licenser/testdata/singlelevel/doc.go: is missing the license header
+elastic/go-licenser/testdata/singlelevel/main.go: is missing the license header
+elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license header
 `[1:],
 		},
 		{
@@ -176,12 +176,12 @@ src/github.com/elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing t
 				t.Errorf("run() = %v, want %v", got, tt.want)
 			}
 
-			gopath := os.Getenv("GOPATH")
-			if gopath == "" {
-				gopath = build.Default.GOPATH
+			re, err := regexp.Compile(`(.*)github\.com` + string(os.PathSeparator))
+			if err != nil {
+				t.Fatal(err)
 			}
-			gotOutput := strings.Replace(buf.String(), gopath, "", -1)
-			gotOutput = strings.Replace(gotOutput, ".."+string(os.PathSeparator), "", -1)
+
+			gotOutput := re.ReplaceAllString(buf.String(), "")
 			tt.wantOutput = filepath.FromSlash(tt.wantOutput)
 			if gotOutput != tt.wantOutput {
 				t.Errorf("Output = \n%v\n want \n%v", gotOutput, tt.wantOutput)
