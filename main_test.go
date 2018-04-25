@@ -181,7 +181,8 @@ src/github.com/elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing t
 				gopath = build.Default.GOPATH
 			}
 			gotOutput := strings.Replace(buf.String(), gopath, "", -1)
-			gotOutput = strings.Replace(gotOutput, "../", "", -1)
+			gotOutput = strings.Replace(gotOutput, ".."+string(os.PathSeparator), "", -1)
+			tt.wantOutput = filepath.FromSlash(tt.wantOutput)
 			if gotOutput != tt.wantOutput {
 				t.Errorf("Output = \n%v\n want \n%v", gotOutput, tt.wantOutput)
 			}
