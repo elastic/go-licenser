@@ -35,4 +35,4 @@ build_script:
 
 test_script:
   - go-licenser -d
-  - for /f "" %%G in ('go list github.com/elastic/go-licenser/...') do ( go test %%G & IF ERRORLEVEL == 1 EXIT 1)
+  - go test ./...
