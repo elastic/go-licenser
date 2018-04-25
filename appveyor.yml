@@ -1,0 +1,38 @@
+version: "{build}"
+
+# Source Config
+
+clone_folder: c:\gopath\src\github.com\elastic\go-licenser
+
+# Build host
+
+environment:
+  GOPATH: c:\gopath
+  GOVERSION: 1.9
+
+# Build
+
+install:
+  # Install the specific Go version.
+  - rmdir c:\go /s /q
+  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
+  - msiexec /i go%GOVERSION%.windows-amd64.msi /q
+  - choco install bzr
+  - set Path=c:\go\bin;c:\gopath\bin;C:\Program Files (x86)\Bazaar\;C:\Program Files\Mercurial\%Path%
+  - go version
+  - go env
+
+before_build:
+  - go get -u golang.org/x/lint/golint
+  - go get -u golang.org/x/tools/cmd/goimports
+  - golint -set_exit_status
+  - gofmt -d -e -s
+  - goimports -d .
+
+build_script:
+  - appveyor AddCompilationMessage "Starting Compilation"
+  - go install github.com/elastic/go-licenser
+
+test_script:
+  - go-licenser -d
+  - for /f "" %%G in ('go list github.com/elastic/go-licenser/...') do ( go test %%G & IF ERRORLEVEL == 1 EXIT 1)
