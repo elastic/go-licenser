@@ -176,7 +176,12 @@ elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license head
 				t.Errorf("run() = %v, want %v", got, tt.want)
 			}
 
-			re, err := regexp.Compile(`(.*)github\.com` + string(os.PathSeparator))
+			var pathSeparator = string(os.PathSeparator)
+			if pathSeparator == `\` {
+				pathSeparator = `\\`
+			}
+
+			re, err := regexp.Compile(`(.*)github\.com` + pathSeparator)
 			if err != nil {
 				t.Fatal(err)
 			}
