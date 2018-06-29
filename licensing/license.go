@@ -72,14 +72,19 @@ func RewriteFileWithHeader(path string, header []byte) error {
 		return err
 	}
 
+	data := RewriteWithHeader(origin, header)
+	return ioutil.WriteFile(path, data, info.Mode())
+}
+
+// RewriteWithHeader rewrites the src byte buffers header with the new header.
+func RewriteWithHeader(src []byte, header []byte) []byte {
 	// Ensures that the header includes two break lines as the last bytes
 	for !reflect.DeepEqual(header[len(header)-2:], []byte("\n\n")) {
 		header = append(header, []byte("\n")...)
 	}
 
-	var oldHeader = headerBytes(bytes.NewReader(origin))
-	var data = bytes.Replace(origin, oldHeader, header, 1)
-	return ioutil.WriteFile(path, data, info.Mode())
+	var oldHeader = headerBytes(bytes.NewReader(src))
+	return bytes.Replace(src, oldHeader, header, 1)
 }
 
 // headerBytes detects the header lines of an io.Reader contents and returns
