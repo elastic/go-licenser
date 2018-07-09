@@ -129,19 +129,29 @@ func reportFile(out io.Writer, f string) {
 
 func walk(p, ext string, exclude []string, dry bool, out io.Writer) (int, error) {
 	var code int
-	return code, filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+	var err error
+	if e := filepath.Walk(p, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
 			code = exitFailedToWalkPath
-			return err
+			return walkErr
 		}
 
 		if info.IsDir() && stringInSlice(info.Name(), exclude) {
 			return filepath.SkipDir
 		}
+		c, e := addOrCheckLicense(path, ext, info, dry, out)
+		if c > 0 {
+			code = c
+		}
+		if err != nil {
+			err = e
+		}
+		return nil
+	}); e != nil {
+		return code, e
+	}
 
-		code, err = addOrCheckLicense(path, ext, info, dry, out)
-		return err
-	})
+	return code, err
 }
 
 func addOrCheckLicense(path, ext string, info os.FileInfo, dry bool, out io.Writer) (int, error) {
