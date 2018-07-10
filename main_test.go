@@ -26,8 +26,10 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"reflect"
 	"regexp"
 	"strings"
+	"syscall"
 	"testing"
 )
 
@@ -112,7 +114,7 @@ func Test_run(t *testing.T) {
 		name       string
 		args       args
 		want       int
-		wantErr    bool
+		err        error
 		wantOutput string
 		wantGolden bool
 	}{
@@ -125,6 +127,7 @@ func Test_run(t *testing.T) {
 				dry:      true,
 			},
 			want: 1,
+			err:  &Error{code: 1},
 			wantOutput: `
 elastic/go-licenser/testdata/multilevel/doc.go: is missing the license header
 elastic/go-licenser/testdata/multilevel/main.go: is missing the license header
@@ -144,8 +147,12 @@ elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license head
 				ext:      defaultExt,
 				dry:      false,
 			},
-			want:    4,
-			wantErr: true,
+			want: 4,
+			err: &Error{code: 4, err: &os.PathError{
+				Op:   "lstat",
+				Path: "/Users/marc/go/src/github.com/elastic/go-licenser/ignore",
+				Err:  syscall.Errno(2),
+			}},
 		},
 		{
 			name: "Run with default mode rewrites the source files",
@@ -156,7 +163,6 @@ elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license head
 				dry:      false,
 			},
 			want:       0,
-			wantErr:    false,
 			wantGolden: true,
 		},
 	}
@@ -167,11 +173,13 @@ elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license head
 			}
 
 			var buf = new(bytes.Buffer)
-			got, err := run(tt.args.args, tt.args.exclDirs, tt.args.ext, tt.args.dry, buf)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("run() error = %v, wantErr %v", err, tt.wantErr)
+			var err = run(tt.args.args, tt.args.exclDirs, tt.args.ext, tt.args.dry, buf)
+			if !reflect.DeepEqual(err, tt.err) {
+				t.Errorf("run() error = %v, wantErr %v", err, tt.err)
 				return
 			}
+
+			var got = Code(err)
 			if got != tt.want {
 				t.Errorf("run() = %v, want %v", got, tt.want)
 			}
@@ -195,7 +203,7 @@ elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license head
 			if tt.wantGolden {
 				if *update {
 					copyFixtures(t, "golden")
-					if _, err := run([]string{"golden"}, tt.args.exclDirs, tt.args.ext, tt.args.dry, buf); err != nil {
+					if err := run([]string{"golden"}, tt.args.exclDirs, tt.args.ext, tt.args.dry, buf); err != nil {
 						t.Fatal(err)
 					}
 				}
