@@ -27,7 +27,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"regexp"
+	"runtime"
 	"strings"
 	"syscall"
 	"testing"
@@ -129,14 +129,14 @@ func Test_run(t *testing.T) {
 			want: 1,
 			err:  &Error{code: 1},
 			wantOutput: `
-elastic/go-licenser/testdata/multilevel/doc.go: is missing the license header
-elastic/go-licenser/testdata/multilevel/main.go: is missing the license header
-elastic/go-licenser/testdata/multilevel/sublevel/autogen.go: is missing the license header
-elastic/go-licenser/testdata/multilevel/sublevel/doc.go: is missing the license header
-elastic/go-licenser/testdata/multilevel/sublevel/partial.go: is missing the license header
-elastic/go-licenser/testdata/singlelevel/doc.go: is missing the license header
-elastic/go-licenser/testdata/singlelevel/main.go: is missing the license header
-elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license header
+testdata/multilevel/doc.go: is missing the license header
+testdata/multilevel/main.go: is missing the license header
+testdata/multilevel/sublevel/autogen.go: is missing the license header
+testdata/multilevel/sublevel/doc.go: is missing the license header
+testdata/multilevel/sublevel/partial.go: is missing the license header
+testdata/singlelevel/doc.go: is missing the license header
+testdata/singlelevel/main.go: is missing the license header
+testdata/singlelevel/wrapper.go: is missing the license header
 `[1:],
 		},
 		{
@@ -147,12 +147,8 @@ elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license head
 				ext:      defaultExt,
 				dry:      false,
 			},
-			want: 4,
-			err: &Error{code: 4, err: &os.PathError{
-				Op:   "lstat",
-				Path: "/Users/marc/go/src/github.com/elastic/go-licenser/ignore",
-				Err:  syscall.Errno(2),
-			}},
+			want: 2,
+			err:  goosPathError(2, "ignore"),
 		},
 		{
 			name: "Run with default mode rewrites the source files",
@@ -184,17 +180,7 @@ elastic/go-licenser/testdata/singlelevel/wrapper.go: is missing the license head
 				t.Errorf("run() = %v, want %v", got, tt.want)
 			}
 
-			var pathSeparator = string(os.PathSeparator)
-			if pathSeparator == `\` {
-				pathSeparator = `\\`
-			}
-
-			re, err := regexp.Compile(`(.*)github\.com` + pathSeparator)
-			if err != nil {
-				t.Fatal(err)
-			}
-
-			gotOutput := re.ReplaceAllString(buf.String(), "")
+			var gotOutput = buf.String()
 			tt.wantOutput = filepath.FromSlash(tt.wantOutput)
 			if gotOutput != tt.wantOutput {
 				t.Errorf("Output = \n%v\n want \n%v", gotOutput, tt.wantOutput)
@@ -249,4 +235,17 @@ func hashDirectories(t *testing.T, src, dest string) {
 		t.Errorf("src folder hash: %x", srcSum)
 		t.Errorf("dst folder hash: %x", dstSum)
 	}
+}
+
+func goosPathError(code int, p string) error {
+	var opName = "stat"
+	if runtime.GOOS == "windows" {
+		opName = "CreateFile"
+	}
+
+	return &Error{code: code, err: &os.PathError{
+		Op:   opName,
+		Path: p,
+		Err:  syscall.ENOENT,
+	}}
 }

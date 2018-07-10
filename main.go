@@ -36,7 +36,7 @@ const (
 const (
 	exitDefault = iota
 	exitSourceNeedsToBeRewritten
-	exitFailedToAbstractPath
+	exitFailedToStatTree
 	exitFailedToStatFile
 	exitFailedToWalkPath
 	exitFailedToOpenWalkFile
@@ -108,11 +108,8 @@ func run(args, exclDirs []string, ext string, dry bool, out io.Writer) error {
 		path = args[0]
 	}
 
-	if !filepath.IsAbs(path) {
-		var err error
-		if path, err = filepath.Abs(path); err != nil {
-			return &Error{err: err, code: exitFailedToAbstractPath}
-		}
+	if _, err := os.Stat(path); err != nil {
+		return &Error{err: err, code: exitFailedToStatTree}
 	}
 
 	return walk(path, ext, defaultExludedDirs, dry, out)
