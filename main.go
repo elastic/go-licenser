@@ -36,7 +36,7 @@ const (
 const (
 	exitDefault = iota
 	exitSourceNeedsToBeRewritten
-	exitFailedToAbstractPath
+	exitFailedToStatTree
 	exitFailedToStatFile
 	exitFailedToWalkPath
 	exitFailedToOpenWalkFile
@@ -94,25 +94,22 @@ func init() {
 }
 
 func main() {
-	code, err := run(args, defaultExludedDirs, extension, dryRun, os.Stdout)
-	if err != nil {
+	err := run(args, defaultExludedDirs, extension, dryRun, os.Stdout)
+	if err != nil && err.Error() != "<nil>" {
 		fmt.Println(err)
 	}
 
-	os.Exit(code)
+	os.Exit(Code(err))
 }
 
-func run(args, exclDirs []string, ext string, dry bool, out io.Writer) (int, error) {
+func run(args, exclDirs []string, ext string, dry bool, out io.Writer) error {
 	var path = defaultPath
 	if len(args) > 0 {
 		path = args[0]
 	}
 
-	if !filepath.IsAbs(path) {
-		var err error
-		if path, err = filepath.Abs(path); err != nil {
-			return exitFailedToAbstractPath, err
-		}
+	if _, err := os.Stat(path); err != nil {
+		return &Error{err: err, code: exitFailedToStatTree}
 	}
 
 	return walk(path, ext, defaultExludedDirs, dry, out)
@@ -127,48 +124,53 @@ func reportFile(out io.Writer, f string) {
 	fmt.Fprintf(out, defaultFormat, rel)
 }
 
-func walk(p, ext string, exclude []string, dry bool, out io.Writer) (int, error) {
-	var code int
-	return code, filepath.Walk(p, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			code = exitFailedToWalkPath
-			return err
+func walk(p, ext string, exclude []string, dry bool, out io.Writer) error {
+	var err error
+	filepath.Walk(p, func(path string, info os.FileInfo, walkErr error) error {
+		if walkErr != nil {
+			err = &Error{err: walkErr, code: exitFailedToWalkPath}
+			return walkErr
 		}
 
 		if info.IsDir() && stringInSlice(info.Name(), exclude) {
 			return filepath.SkipDir
 		}
 
-		code, err = addOrCheckLicense(path, ext, info, dry, out)
-		return err
+		if e := addOrCheckLicense(path, ext, info, dry, out); e != nil {
+			err = e
+		}
+
+		return nil
 	})
+
+	return err
 }
 
-func addOrCheckLicense(path, ext string, info os.FileInfo, dry bool, out io.Writer) (int, error) {
+func addOrCheckLicense(path, ext string, info os.FileInfo, dry bool, out io.Writer) error {
 	if info.IsDir() || filepath.Ext(path) != ext {
-		return exitDefault, nil
+		return nil
 	}
 
 	f, e := os.Open(path)
 	if e != nil {
-		return exitFailedToOpenWalkFile, e
+		return &Error{err: e, code: exitFailedToOpenWalkFile}
 	}
 	defer f.Close()
 
 	if licensing.ContainsHeader(f, Header) {
-		return exitDefault, nil
+		return nil
 	}
 
 	if dry {
 		reportFile(out, path)
-		return exitSourceNeedsToBeRewritten, nil
+		return &Error{code: exitSourceNeedsToBeRewritten}
 	}
 
 	if err := licensing.RewriteFileWithHeader(path, headerBytes); err != nil {
-		return errFailedRewrittingFile, err
+		return &Error{err: err, code: errFailedRewrittingFile}
 	}
 
-	return exitDefault, nil
+	return nil
 }
 
 func stringInSlice(a string, list []string) bool {
