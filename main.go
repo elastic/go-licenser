@@ -23,6 +23,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/elastic/go-licenser/licensing"
 )
@@ -78,10 +79,27 @@ var (
 	extension          string
 	args               []string
 	headerBytes        []byte
+	exclude            sliceFlag
 	defaultExludedDirs = []string{"vendor", ".git"}
 )
 
+type sliceFlag []string
+
+func (f *sliceFlag) String() string {
+	var s string
+	for _, i := range *f {
+		s += i + " "
+	}
+	return s
+}
+
+func (f *sliceFlag) Set(value string) error {
+	*f = append(*f, value)
+	return nil
+}
+
 func init() {
+	flag.Var(&exclude, "exclude", `path to exclude (can be specified multiple times).`)
 	flag.BoolVar(&dryRun, "d", false, `skips rewriting files and returns exitcode 1 if any discrepancies are found.`)
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
 	flag.Usage = usageFlag
@@ -94,15 +112,15 @@ func init() {
 }
 
 func main() {
-	err := run(args, defaultExludedDirs, extension, dryRun, os.Stdout)
+	err := run(args, exclude, extension, dryRun, os.Stdout)
 	if err != nil && err.Error() != "<nil>" {
-		fmt.Println(err)
+		fmt.Fprint(os.Stderr, err)
 	}
 
 	os.Exit(Code(err))
 }
 
-func run(args, exclDirs []string, ext string, dry bool, out io.Writer) error {
+func run(args, exclude []string, ext string, dry bool, out io.Writer) error {
 	var path = defaultPath
 	if len(args) > 0 {
 		path = args[0]
@@ -112,7 +130,7 @@ func run(args, exclDirs []string, ext string, dry bool, out io.Writer) error {
 		return &Error{err: err, code: exitFailedToStatTree}
 	}
 
-	return walk(path, ext, defaultExludedDirs, dry, out)
+	return walk(path, ext, exclude, dry, out)
 }
 
 func reportFile(out io.Writer, f string) {
@@ -132,7 +150,13 @@ func walk(p, ext string, exclude []string, dry bool, out io.Writer) error {
 			return walkErr
 		}
 
-		if info.IsDir() && stringInSlice(info.Name(), exclude) {
+		var currentPath = cleanPathPrefixes(
+			strings.Replace(path, p, "", 1),
+			[]string{"/"},
+		)
+
+		var excludedDir = info.IsDir() && stringInSlice(info.Name(), defaultExludedDirs)
+		if needsExclusion(currentPath, exclude) || excludedDir {
 			return filepath.SkipDir
 		}
 
