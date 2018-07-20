@@ -18,6 +18,7 @@
 package main
 
 import (
+	"path/filepath"
 	"testing"
 )
 
@@ -82,8 +83,8 @@ func Test_needsExclusion(t *testing.T) {
 		{
 			name: "Path is excluded",
 			args: args{
-				path:    "apath/thatdoesNeed/exclusion",
-				exclude: []string{"apath/thatdoesNeed/exclusion/*"},
+				path:    filepath.Join("apath", "thatdoesNeed", "exclusion"),
+				exclude: []string{filepath.Join("apath", "thatdoesNeed", "exclusion", "*")},
 			},
 			want: true,
 		},

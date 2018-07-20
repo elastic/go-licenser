@@ -152,7 +152,7 @@ func walk(p, ext string, exclude []string, dry bool, out io.Writer) error {
 
 		var currentPath = cleanPathPrefixes(
 			strings.Replace(path, p, "", 1),
-			[]string{"/"},
+			[]string{string(os.PathSeparator)},
 		)
 
 		var excludedDir = info.IsDir() && stringInSlice(info.Name(), defaultExludedDirs)

@@ -17,11 +17,14 @@
 
 package main
 
-import "strings"
+import (
+	"os"
+	"strings"
+)
 
 func needsExclusion(path string, exclude []string) bool {
 	for _, excluded := range exclude {
-		excluded = cleanPathSuffixes(excluded, []string{"*", "/"})
+		excluded = cleanPathSuffixes(excluded, []string{"*", string(os.PathSeparator)})
 		if strings.HasPrefix(path, excluded) {
 			return true
 		}
