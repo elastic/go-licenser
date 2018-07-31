@@ -34,5 +34,5 @@ build_script:
   - go install github.com/elastic/go-licenser
 
 test_script:
-  - go-licenser -d
+  - go-licenser -d -exclude golden
   - go test -timeout 10s -p 4 -race -cover ./...

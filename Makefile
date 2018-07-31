@@ -63,7 +63,7 @@ install:
 lint: deps build
 	@ golint -set_exit_status $(shell go list ./...)
 	@ gofmt -d -e -s $(LINT_FOLDERS)
-	@ ./bin/go-licenser -d
+	@ ./bin/go-licenser -d -exclude golden
 
 .PHONY: format
 format: deps build

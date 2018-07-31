@@ -29,9 +29,10 @@ import (
 )
 
 const (
-	defaultExt    = ".go"
-	defaultPath   = "."
-	defaultFormat = "%s: is missing the license header\n"
+	defaultExt     = ".go"
+	defaultPath    = "."
+	defaultLicense = "ASL2"
+	defaultFormat  = "%s: is missing the license header\n"
 )
 
 const (
@@ -42,6 +43,7 @@ const (
 	exitFailedToWalkPath
 	exitFailedToOpenWalkFile
 	errFailedRewrittingFile
+	errUnknownLicense
 )
 
 var usageText = `
@@ -54,31 +56,38 @@ Options:
 
 `[1:]
 
-// Header is the licenser that all of the files in the repository must have.
-var Header = []string{
-	`// Licensed to Elasticsearch B.V. under one or more contributor`,
-	`// license agreements. See the NOTICE file distributed with`,
-	`// this work for additional information regarding copyright`,
-	`// ownership. Elasticsearch B.V. licenses this file to you under`,
-	`// the Apache License, Version 2.0 (the "License"); you may`,
-	`// not use this file except in compliance with the License.`,
-	`// You may obtain a copy of the License at`,
-	`//`,
-	`//     http://www.apache.org/licenses/LICENSE-2.0`,
-	`//`,
-	`// Unless required by applicable law or agreed to in writing,`,
-	`// software distributed under the License is distributed on an`,
-	`// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY`,
-	`// KIND, either express or implied.  See the License for the`,
-	`// specific language governing permissions and limitations`,
-	`// under the License.`,
+// Headers is the map of supported licenses
+var Headers = map[string][]string{
+	"ASL2": {
+		`// Licensed to Elasticsearch B.V. under one or more contributor`,
+		`// license agreements. See the NOTICE file distributed with`,
+		`// this work for additional information regarding copyright`,
+		`// ownership. Elasticsearch B.V. licenses this file to you under`,
+		`// the Apache License, Version 2.0 (the "License"); you may`,
+		`// not use this file except in compliance with the License.`,
+		`// You may obtain a copy of the License at`,
+		`//`,
+		`//     http://www.apache.org/licenses/LICENSE-2.0`,
+		`//`,
+		`// Unless required by applicable law or agreed to in writing,`,
+		`// software distributed under the License is distributed on an`,
+		`// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY`,
+		`// KIND, either express or implied.  See the License for the`,
+		`// specific language governing permissions and limitations`,
+		`// under the License.`,
+	},
+	"Elastic": {
+		`// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one`,
+		`// or more contributor license agreements. Licensed under the Elastic License;`,
+		`// you may not use this file except in compliance with the Elastic License.`,
+	},
 }
 
 var (
 	dryRun             bool
 	extension          string
 	args               []string
-	headerBytes        []byte
+	license            string
 	exclude            sliceFlag
 	defaultExludedDirs = []string{"vendor", ".git"}
 )
@@ -102,17 +111,14 @@ func init() {
 	flag.Var(&exclude, "exclude", `path to exclude (can be specified multiple times).`)
 	flag.BoolVar(&dryRun, "d", false, `skips rewriting files and returns exitcode 1 if any discrepancies are found.`)
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
+	flag.StringVar(&license, "license", defaultLicense, "sets the license type to check: apache2, elastic")
 	flag.Usage = usageFlag
 	flag.Parse()
 	args = flag.Args()
-	for i := range Header {
-		headerBytes = append(headerBytes, []byte(Header[i])...)
-		headerBytes = append(headerBytes, []byte("\n")...)
-	}
 }
 
 func main() {
-	err := run(args, exclude, extension, dryRun, os.Stdout)
+	err := run(args, license, exclude, extension, dryRun, os.Stdout)
 	if err != nil && err.Error() != "<nil>" {
 		fmt.Fprint(os.Stderr, err)
 	}
@@ -120,7 +126,18 @@ func main() {
 	os.Exit(Code(err))
 }
 
-func run(args, exclude []string, ext string, dry bool, out io.Writer) error {
+func run(args []string, license string, exclude []string, ext string, dry bool, out io.Writer) error {
+	header, ok := Headers[license]
+	if !ok {
+		return &Error{err: fmt.Errorf("unkown license: %s", license), code: errUnknownLicense}
+	}
+
+	var headerBytes []byte
+	for i := range header {
+		headerBytes = append(headerBytes, []byte(header[i])...)
+		headerBytes = append(headerBytes, []byte("\n")...)
+	}
+
 	var path = defaultPath
 	if len(args) > 0 {
 		path = args[0]
@@ -130,7 +147,7 @@ func run(args, exclude []string, ext string, dry bool, out io.Writer) error {
 		return &Error{err: err, code: exitFailedToStatTree}
 	}
 
-	return walk(path, ext, exclude, dry, out)
+	return walk(path, ext, license, headerBytes, exclude, dry, out)
 }
 
 func reportFile(out io.Writer, f string) {
@@ -142,7 +159,7 @@ func reportFile(out io.Writer, f string) {
 	fmt.Fprintf(out, defaultFormat, rel)
 }
 
-func walk(p, ext string, exclude []string, dry bool, out io.Writer) error {
+func walk(p, ext, license string, headerBytes []byte, exclude []string, dry bool, out io.Writer) error {
 	var err error
 	filepath.Walk(p, func(path string, info os.FileInfo, walkErr error) error {
 		if walkErr != nil {
@@ -160,7 +177,7 @@ func walk(p, ext string, exclude []string, dry bool, out io.Writer) error {
 			return filepath.SkipDir
 		}
 
-		if e := addOrCheckLicense(path, ext, info, dry, out); e != nil {
+		if e := addOrCheckLicense(path, ext, license, headerBytes, info, dry, out); e != nil {
 			err = e
 		}
 
@@ -170,7 +187,7 @@ func walk(p, ext string, exclude []string, dry bool, out io.Writer) error {
 	return err
 }
 
-func addOrCheckLicense(path, ext string, info os.FileInfo, dry bool, out io.Writer) error {
+func addOrCheckLicense(path, ext, license string, headerBytes []byte, info os.FileInfo, dry bool, out io.Writer) error {
 	if info.IsDir() || filepath.Ext(path) != ext {
 		return nil
 	}
@@ -181,7 +198,7 @@ func addOrCheckLicense(path, ext string, info os.FileInfo, dry bool, out io.Writ
 	}
 	defer f.Close()
 
-	if licensing.ContainsHeader(f, Header) {
+	if licensing.ContainsHeader(f, Headers[license]) {
 		return nil
 	}
 
