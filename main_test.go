@@ -105,10 +105,10 @@ func dcopy(src, dest string, info os.FileInfo) error {
 
 func Test_run(t *testing.T) {
 	type args struct {
-		args     []string
-		exclDirs []string
-		ext      string
-		dry      bool
+		args    []string
+		exclude []string
+		ext     string
+		dry     bool
 	}
 	tests := []struct {
 		name       string
@@ -121,10 +121,10 @@ func Test_run(t *testing.T) {
 		{
 			name: "Run a diff prints a list of files that need the license header",
 			args: args{
-				args:     []string{"testdata"},
-				exclDirs: defaultExludedDirs,
-				ext:      defaultExt,
-				dry:      true,
+				args:    []string{"testdata"},
+				exclude: []string{"excludedpath"},
+				ext:     defaultExt,
+				dry:     true,
 			},
 			want: 1,
 			err:  &Error{code: 1},
@@ -142,10 +142,9 @@ testdata/singlelevel/wrapper.go: is missing the license header
 		{
 			name: "Run against an unexisting dir fails",
 			args: args{
-				args:     []string{"ignore"},
-				exclDirs: defaultExludedDirs,
-				ext:      defaultExt,
-				dry:      false,
+				args: []string{"ignore"},
+				ext:  defaultExt,
+				dry:  false,
 			},
 			want: 2,
 			err:  goosPathError(2, "ignore"),
@@ -153,10 +152,10 @@ testdata/singlelevel/wrapper.go: is missing the license header
 		{
 			name: "Run with default mode rewrites the source files",
 			args: args{
-				args:     []string{"testdata"},
-				exclDirs: defaultExludedDirs,
-				ext:      defaultExt,
-				dry:      false,
+				args:    []string{"testdata"},
+				exclude: []string{"excludedpath"},
+				ext:     defaultExt,
+				dry:     false,
 			},
 			want:       0,
 			wantGolden: true,
@@ -169,7 +168,7 @@ testdata/singlelevel/wrapper.go: is missing the license header
 			}
 
 			var buf = new(bytes.Buffer)
-			var err = run(tt.args.args, tt.args.exclDirs, tt.args.ext, tt.args.dry, buf)
+			var err = run(tt.args.args, tt.args.exclude, tt.args.ext, tt.args.dry, buf)
 			if !reflect.DeepEqual(err, tt.err) {
 				t.Errorf("run() error = %v, wantErr %v", err, tt.err)
 				return
@@ -189,7 +188,7 @@ testdata/singlelevel/wrapper.go: is missing the license header
 			if tt.wantGolden {
 				if *update {
 					copyFixtures(t, "golden")
-					if err := run([]string{"golden"}, tt.args.exclDirs, tt.args.ext, tt.args.dry, buf); err != nil {
+					if err := run([]string{"golden"}, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
 						t.Fatal(err)
 					}
 				}
