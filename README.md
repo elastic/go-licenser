@@ -29,8 +29,13 @@ Usage: go-licenser [flags] [path]
 Options:
 
   -d	skips rewriting files and returns exitcode 1 if any discrepancies are found.
+  -exclude value
+    	path to exclude (can be specified multiple times).
   -ext string
     	sets the file extension to scan for. (default ".go")
+  -license string
+    	sets the license type to check: ASL2, Elastic (default "ASL2")
+
 ```
 
 ## Contributing
