@@ -111,7 +111,7 @@ func init() {
 	flag.Var(&exclude, "exclude", `path to exclude (can be specified multiple times).`)
 	flag.BoolVar(&dryRun, "d", false, `skips rewriting files and returns exitcode 1 if any discrepancies are found.`)
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
-	flag.StringVar(&license, "license", defaultLicense, "sets the license type to check: apache2, elastic")
+	flag.StringVar(&license, "license", defaultLicense, "sets the license type to check: ASL2, Elastic")
 	flag.Usage = usageFlag
 	flag.Parse()
 	args = flag.Args()
