@@ -129,7 +129,7 @@ func main() {
 func run(args []string, license string, exclude []string, ext string, dry bool, out io.Writer) error {
 	header, ok := Headers[license]
 	if !ok {
-		return &Error{err: fmt.Errorf("unkown license: %s", license), code: errUnknownLicense}
+		return &Error{err: fmt.Errorf("unknown license: %s", license), code: errUnknownLicense}
 	}
 
 	var headerBytes []byte

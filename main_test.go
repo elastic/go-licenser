@@ -186,7 +186,7 @@ testdata/x-pack/wrong.go: is missing the license header
 				dry:     false,
 			},
 			want: 7,
-			err:  &Error{err: errors.New("unkown license: foo"), code: 7},
+			err:  &Error{err: errors.New("unknown license: foo"), code: 7},
 		},
 		{
 			name: "Run with default mode rewrites the source files",
