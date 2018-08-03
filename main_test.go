@@ -20,6 +20,7 @@ package main
 import (
 	"bytes"
 	"crypto/sha1"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -106,6 +107,7 @@ func dcopy(src, dest string, info os.FileInfo) error {
 func Test_run(t *testing.T) {
 	type args struct {
 		args    []string
+		license string
 		exclude []string
 		ext     string
 		dry     bool
@@ -122,7 +124,8 @@ func Test_run(t *testing.T) {
 			name: "Run a diff prints a list of files that need the license header",
 			args: args{
 				args:    []string{"testdata"},
-				exclude: []string{"excludedpath"},
+				license: defaultLicense,
+				exclude: []string{"excludedpath", "x-pack"},
 				ext:     defaultExt,
 				dry:     true,
 			},
@@ -140,20 +143,57 @@ testdata/singlelevel/wrapper.go: is missing the license header
 `[1:],
 		},
 		{
+			name: "Run a diff prints a list of files that need the Elastic license header",
+			args: args{
+				args:    []string{"testdata"},
+				license: "Elastic",
+				ext:     defaultExt,
+				dry:     true,
+			},
+			want: 1,
+			err:  &Error{code: 1},
+			wantOutput: `
+testdata/excludedpath/file.go: is missing the license header
+testdata/multilevel/doc.go: is missing the license header
+testdata/multilevel/main.go: is missing the license header
+testdata/multilevel/sublevel/autogen.go: is missing the license header
+testdata/multilevel/sublevel/doc.go: is missing the license header
+testdata/multilevel/sublevel/partial.go: is missing the license header
+testdata/singlelevel/doc.go: is missing the license header
+testdata/singlelevel/main.go: is missing the license header
+testdata/singlelevel/wrapper.go: is missing the license header
+testdata/singlelevel/zrapper.go: is missing the license header
+testdata/x-pack/wrong.go: is missing the license header
+`[1:],
+		},
+		{
 			name: "Run against an unexisting dir fails",
 			args: args{
-				args: []string{"ignore"},
-				ext:  defaultExt,
-				dry:  false,
+				args:    []string{"ignore"},
+				license: defaultLicense,
+				ext:     defaultExt,
+				dry:     false,
 			},
 			want: 2,
 			err:  goosPathError(2, "ignore"),
 		},
 		{
+			name: "Unknown license fails",
+			args: args{
+				args:    []string{"ignore"},
+				license: "foo",
+				ext:     defaultExt,
+				dry:     false,
+			},
+			want: 7,
+			err:  &Error{err: errors.New("unknown license: foo"), code: 7},
+		},
+		{
 			name: "Run with default mode rewrites the source files",
 			args: args{
 				args:    []string{"testdata"},
-				exclude: []string{"excludedpath"},
+				license: defaultLicense,
+				exclude: []string{"excludedpath", "x-pack"},
 				ext:     defaultExt,
 				dry:     false,
 			},
@@ -168,7 +208,7 @@ testdata/singlelevel/wrapper.go: is missing the license header
 			}
 
 			var buf = new(bytes.Buffer)
-			var err = run(tt.args.args, tt.args.exclude, tt.args.ext, tt.args.dry, buf)
+			var err = run(tt.args.args, tt.args.license, tt.args.exclude, tt.args.ext, tt.args.dry, buf)
 			if !reflect.DeepEqual(err, tt.err) {
 				t.Errorf("run() error = %v, wantErr %v", err, tt.err)
 				return
@@ -188,7 +228,7 @@ testdata/singlelevel/wrapper.go: is missing the license header
 			if tt.wantGolden {
 				if *update {
 					copyFixtures(t, "golden")
-					if err := run([]string{"golden"}, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
+					if err := run([]string{"golden"}, tt.args.license, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
 						t.Fatal(err)
 					}
 				}
