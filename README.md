@@ -7,6 +7,7 @@ is useful outside of Elastic **_at the current stage_**, but the `licensing` pac
 ## Supported Licenses
 
 * Apache 2.0
+* Elastic
 
 ## Supported languages
 
