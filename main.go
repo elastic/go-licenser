@@ -85,6 +85,7 @@ var Headers = map[string][]string{
 
 var (
 	dryRun             bool
+	showVersion        bool
 	extension          string
 	args               []string
 	license            string
@@ -110,6 +111,7 @@ func (f *sliceFlag) Set(value string) error {
 func init() {
 	flag.Var(&exclude, "exclude", `path to exclude (can be specified multiple times).`)
 	flag.BoolVar(&dryRun, "d", false, `skips rewriting files and returns exitcode 1 if any discrepancies are found.`)
+	flag.BoolVar(&showVersion, "version", false, `prints out the binary version.`)
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
 	flag.StringVar(&license, "license", defaultLicense, "sets the license type to check: ASL2, Elastic")
 	flag.Usage = usageFlag
@@ -118,6 +120,11 @@ func init() {
 }
 
 func main() {
+	if showVersion {
+		fmt.Printf("go-licenser %s (%s)\n", version, commit)
+		return
+	}
+
 	err := run(args, license, exclude, extension, dryRun, os.Stdout)
 	if err != nil && err.Error() != "<nil>" {
 		fmt.Fprint(os.Stderr, err)
