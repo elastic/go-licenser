@@ -6,6 +6,7 @@ TEST_UNIT_PACKAGE ?= ./...
 GOLINT_PRESENT := $(shell command -v golint 2> /dev/null)
 GOIMPORTS_PRESENT := $(shell command -v goimports 2> /dev/null)
 GORELEASER_PRESENT := $(shell command -v goreleaser 2> /dev/null)
+RELEASED = $(shell git tag -l $(VERSION))
 DEFAULT_LDFLAGS ?= -X main.version=$(VERSION)-dev -X main.commit=$(shell git rev-parse HEAD)
 
 define HELP
@@ -89,7 +90,7 @@ format: deps build
 release: deps release_deps
 	@ echo "-> Releasing $(REPO) $(VERSION)..."
 	@ git fetch upstream
-ifeq ($$(shell git tag -l $(VERSION)),)
+ifeq ($(strip $(RELEASED)),)
 	@ echo "-> Creating and pushing a new tag $(VERSION)..."
 	@ git tag $(VERSION)
 	@ git push upstream $(VERSION)
