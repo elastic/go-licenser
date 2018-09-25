@@ -35,7 +35,7 @@ Options:
   -ext string
     	sets the file extension to scan for. (default ".go")
   -license string
-    	sets the license type to check: ASL2, Elastic (default "ASL2")
+    	sets the license type to check: ASL2, Elastic, Cloud (default "ASL2")
   -version
     	prints out the binary version.
 ```

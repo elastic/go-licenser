@@ -125,7 +125,7 @@ func Test_run(t *testing.T) {
 			args: args{
 				args:    []string{"testdata"},
 				license: defaultLicense,
-				exclude: []string{"excludedpath", "x-pack"},
+				exclude: []string{"excludedpath", "x-pack", "cloud"},
 				ext:     defaultExt,
 				dry:     true,
 			},
@@ -153,6 +153,8 @@ testdata/singlelevel/wrapper.go: is missing the license header
 			want: 1,
 			err:  &Error{code: 1},
 			wantOutput: `
+testdata/cloud/doc.go: is missing the license header
+testdata/cloud/wrong.go: is missing the license header
 testdata/excludedpath/file.go: is missing the license header
 testdata/multilevel/doc.go: is missing the license header
 testdata/multilevel/main.go: is missing the license header
@@ -163,6 +165,32 @@ testdata/singlelevel/doc.go: is missing the license header
 testdata/singlelevel/main.go: is missing the license header
 testdata/singlelevel/wrapper.go: is missing the license header
 testdata/singlelevel/zrapper.go: is missing the license header
+testdata/x-pack/wrong.go: is missing the license header
+`[1:],
+		},
+		{
+			name: "Run a diff prints a list of files that need the Cloud license header",
+			args: args{
+				args:    []string{"testdata"},
+				license: "Cloud",
+				ext:     defaultExt,
+				dry:     true,
+			},
+			want: 1,
+			err:  &Error{code: 1},
+			wantOutput: `
+testdata/cloud/wrong.go: is missing the license header
+testdata/excludedpath/file.go: is missing the license header
+testdata/multilevel/doc.go: is missing the license header
+testdata/multilevel/main.go: is missing the license header
+testdata/multilevel/sublevel/autogen.go: is missing the license header
+testdata/multilevel/sublevel/doc.go: is missing the license header
+testdata/multilevel/sublevel/partial.go: is missing the license header
+testdata/singlelevel/doc.go: is missing the license header
+testdata/singlelevel/main.go: is missing the license header
+testdata/singlelevel/wrapper.go: is missing the license header
+testdata/singlelevel/zrapper.go: is missing the license header
+testdata/x-pack/doc.go: is missing the license header
 testdata/x-pack/wrong.go: is missing the license header
 `[1:],
 		},
@@ -193,7 +221,7 @@ testdata/x-pack/wrong.go: is missing the license header
 			args: args{
 				args:    []string{"testdata"},
 				license: defaultLicense,
-				exclude: []string{"excludedpath", "x-pack"},
+				exclude: []string{"excludedpath", "x-pack", "cloud"},
 				ext:     defaultExt,
 				dry:     false,
 			},
