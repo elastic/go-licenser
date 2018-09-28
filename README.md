@@ -8,6 +8,7 @@ is useful outside of Elastic **_at the current stage_**, but the `licensing` pac
 
 * Apache 2.0
 * Elastic
+* Elastic Cloud
 
 ## Supported languages
 
