@@ -106,11 +106,12 @@ func dcopy(src, dest string, info os.FileInfo) error {
 
 func Test_run(t *testing.T) {
 	type args struct {
-		args    []string
-		license string
-		exclude []string
-		ext     string
-		dry     bool
+		args     []string
+		license  string
+		licensor string
+		exclude  []string
+		ext      string
+		dry      bool
 	}
 	tests := []struct {
 		name       string
@@ -123,11 +124,12 @@ func Test_run(t *testing.T) {
 		{
 			name: "Run a diff prints a list of files that need the license header",
 			args: args{
-				args:    []string{"testdata"},
-				license: defaultLicense,
-				exclude: []string{"excludedpath", "x-pack", "cloud"},
-				ext:     defaultExt,
-				dry:     true,
+				args:     []string{"testdata"},
+				license:  defaultLicense,
+				licensor: defaultLicensor,
+				exclude:  []string{"excludedpath", "x-pack", "cloud"},
+				ext:      defaultExt,
+				dry:      true,
 			},
 			want: 1,
 			err:  &Error{code: 1},
@@ -145,10 +147,11 @@ testdata/singlelevel/wrapper.go: is missing the license header
 		{
 			name: "Run a diff prints a list of files that need the Elastic license header",
 			args: args{
-				args:    []string{"testdata"},
-				license: "Elastic",
-				ext:     defaultExt,
-				dry:     true,
+				args:     []string{"testdata"},
+				license:  "Elastic",
+				licensor: defaultLicensor,
+				ext:      defaultExt,
+				dry:      true,
 			},
 			want: 1,
 			err:  &Error{code: 1},
@@ -171,10 +174,11 @@ testdata/x-pack/wrong.go: is missing the license header
 		{
 			name: "Run a diff prints a list of files that need the Cloud license header",
 			args: args{
-				args:    []string{"testdata"},
-				license: "Cloud",
-				ext:     defaultExt,
-				dry:     true,
+				args:     []string{"testdata"},
+				license:  "Cloud",
+				licensor: defaultLicensor,
+				ext:      defaultExt,
+				dry:      true,
 			},
 			want: 1,
 			err:  &Error{code: 1},
@@ -197,10 +201,11 @@ testdata/x-pack/wrong.go: is missing the license header
 		{
 			name: "Run against an unexisting dir fails",
 			args: args{
-				args:    []string{"ignore"},
-				license: defaultLicense,
-				ext:     defaultExt,
-				dry:     false,
+				args:     []string{"ignore"},
+				license:  defaultLicense,
+				licensor: defaultLicensor,
+				ext:      defaultExt,
+				dry:      false,
 			},
 			want: 2,
 			err:  goosPathError(2, "ignore"),
@@ -208,10 +213,11 @@ testdata/x-pack/wrong.go: is missing the license header
 		{
 			name: "Unknown license fails",
 			args: args{
-				args:    []string{"ignore"},
-				license: "foo",
-				ext:     defaultExt,
-				dry:     false,
+				args:     []string{"ignore"},
+				license:  "foo",
+				licensor: defaultLicensor,
+				ext:      defaultExt,
+				dry:      false,
 			},
 			want: 7,
 			err:  &Error{err: errors.New("unknown license: foo"), code: 7},
@@ -219,11 +225,12 @@ testdata/x-pack/wrong.go: is missing the license header
 		{
 			name: "Run with default mode rewrites the source files",
 			args: args{
-				args:    []string{"testdata"},
-				license: defaultLicense,
-				exclude: []string{"excludedpath", "x-pack", "cloud"},
-				ext:     defaultExt,
-				dry:     false,
+				args:     []string{"testdata"},
+				license:  defaultLicense,
+				licensor: defaultLicensor,
+				exclude:  []string{"excludedpath", "x-pack", "cloud"},
+				ext:      defaultExt,
+				dry:      false,
 			},
 			want:       0,
 			wantGolden: true,
@@ -236,7 +243,7 @@ testdata/x-pack/wrong.go: is missing the license header
 			}
 
 			var buf = new(bytes.Buffer)
-			var err = run(tt.args.args, tt.args.license, tt.args.exclude, tt.args.ext, tt.args.dry, buf)
+			var err = run(tt.args.args, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf)
 			if !reflect.DeepEqual(err, tt.err) {
 				t.Errorf("run() error = %v, wantErr %v", err, tt.err)
 				return
@@ -256,7 +263,7 @@ testdata/x-pack/wrong.go: is missing the license header
 			if tt.wantGolden {
 				if *update {
 					copyFixtures(t, "golden")
-					if err := run([]string{"golden"}, tt.args.license, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
+					if err := run([]string{"golden"}, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
 						t.Fatal(err)
 					}
 				}

@@ -28,11 +28,11 @@ import (
 	"time"
 )
 
-var exampleHeader = []string{
-	"// Copyright 2018 The elastic/go-licenser Authors. All rights reserved.",
-}
-
 func TestContainsHeader(t *testing.T) {
+	exampleHeader := []string{
+		fmt.Sprintf("// Copyright %d The elastic/go-licenser Authors. All rights reserved.", time.Now().Year()),
+	}
+
 	type args struct {
 		r      io.Reader
 		header []string
@@ -125,7 +125,7 @@ package main
 			want: true,
 		},
 		{
-			name: "ContainsHeader returns true on reader that matches the license text",
+			name: "ContainsHeader returns true on reader that matches the ASL license text",
 			args: args{
 				r: strings.NewReader(`
 // Licensed to Elasticsearch B.V. under one or more contributor
@@ -170,7 +170,7 @@ package mypackage
 			want: true,
 		},
 		{
-			name: "ContainsHeader returns true on reader that matches the license text",
+			name: "ContainsHeader returns true on reader that matches the ASL license text after package",
 			args: args{
 				r: strings.NewReader(`
 package mypackage
