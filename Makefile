@@ -1,4 +1,5 @@
 export VERSION := 0.2.0
+export GO111MODULE ?= on
 OWNER ?= elastic
 REPO ?= go-licenser
 TEST_UNIT_FLAGS ?= -timeout 10s -p 4 -race -cover
@@ -44,12 +45,12 @@ help:
 .PHONY: deps
 deps:
 ifndef GOLINT_PRESENT
-	@ go get -u golang.org/x/lint/golint
+	@ GO111MODULE=off go get -u golang.org/x/lint/golint
 endif
 ifndef GOIMPORTS_PRESENT
-	@ go get -u golang.org/x/tools/cmd/goimports
+	@ GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
 endif
-	@ GO111MODULE=on go mod download
+	@ go mod download
 
 .PHONY: release_deps
 release_deps:

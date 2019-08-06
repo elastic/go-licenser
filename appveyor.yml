@@ -9,6 +9,7 @@ clone_folder: c:\gopath\src\github.com\elastic\go-licenser
 environment:
   GOPATH: c:\gopath
   GOVERSION: 1.12
+  GO111MODULE: on
 
 # Build
 
@@ -23,9 +24,9 @@ install:
   - go env
 
 before_build:
-  - GO111MODULE=on go mod download
-  - go get -u golang.org/x/lint/golint
-  - go get -u golang.org/x/tools/cmd/goimports
+  - go mod download
+  - GO111MODULE=off go get -u golang.org/x/lint/golint
+  - GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
   - golint -set_exit_status .
   - gofmt -d -e -s .
   - goimports -d .
