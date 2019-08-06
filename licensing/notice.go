@@ -115,7 +115,7 @@ func (params GenerateNoticeParams) Validate() error {
 		merr = multierror.Append(merr, errors.New("notice: missing file path"))
 	}
 	if params.AnalyseFunc == nil {
-		merr = multierror.Append(merr, errors.New("notice: AnalyseFunc is missing"))
+		merr = multierror.Append(merr, errors.New("notice: missing AnalyseFunc"))
 	}
 	if params.Project == "" {
 		merr = multierror.Append(merr, errors.New("notice: missing project name"))

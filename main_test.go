@@ -107,7 +107,6 @@ func dcopy(src, dest string, info os.FileInfo) error {
 }
 
 var goModAnalyseFunc = genAnalyseFunc([]licensedb.Result{
-	// github.com/sirkon/goproxy
 	{
 		Arg:     "github.com/hashicorp/multierror-go",
 		Matches: []licensedb.Match{{License: "MPL-2.0"}},

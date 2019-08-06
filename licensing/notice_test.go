@@ -139,7 +139,7 @@ func TestGenerateNotice(t *testing.T) {
 			args: args{params: GenerateNoticeParams{}},
 			err: &multierror.Error{Errors: []error{
 				errors.New("notice: missing file path"),
-				errors.New("notice: AnalyseFunc is missing"),
+				errors.New("notice: missing AnalyseFunc"),
 				errors.New("notice: missing project name"),
 			}},
 		},
