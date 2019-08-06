@@ -317,6 +317,8 @@ testdata/x-pack/wrong.go: is missing the license header
 			splitOutput := strings.Split(gotOutput, "Generating")
 			if len(splitOutput) > 1 {
 				gotOutput = filepath.FromSlash(splitOutput[0]) + "Generating" + splitOutput[1]
+			} else {
+				gotOutput = filepath.FromSlash(gotOutput)
 			}
 			if gotOutput != tt.wantOutput {
 				t.Errorf("Output = \n%v\n want \n%v", gotOutput, tt.wantOutput)
