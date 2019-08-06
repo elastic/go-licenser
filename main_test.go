@@ -32,6 +32,8 @@ import (
 	"strings"
 	"syscall"
 	"testing"
+
+	"gopkg.in/src-d/go-license-detector.v2/licensedb"
 )
 
 const fixtures = "fixtures"
@@ -104,26 +106,38 @@ func dcopy(src, dest string, info os.FileInfo) error {
 	return nil
 }
 
+var goModAnalyseFunc = genAnalyseFunc([]licensedb.Result{
+	// github.com/sirkon/goproxy
+	{
+		Arg:     "github.com/hashicorp/multierror-go",
+		Matches: []licensedb.Match{{License: "MPL-2.0"}},
+	},
+	{
+		Arg:     "github.com/sirkon/goproxy",
+		Matches: []licensedb.Match{{License: "MIT"}},
+	},
+	{
+		Arg:     "gopkg.in/src-d/go-license-detector.v2",
+		Matches: []licensedb.Match{{License: "Apache-2.0"}},
+	},
+})
+
+func genAnalyseFunc(r []licensedb.Result) func(args ...string) []licensedb.Result {
+	return func(args ...string) []licensedb.Result { return r }
+}
+
 func Test_run(t *testing.T) {
-	type args struct {
-		args     []string
-		license  string
-		licensor string
-		exclude  []string
-		ext      string
-		dry      bool
-	}
 	tests := []struct {
 		name       string
-		args       args
+		args       runParams
 		want       int
 		err        error
 		wantOutput string
 		wantGolden bool
 	}{
 		{
-			name: "Run a diff prints a list of files that need the license header",
-			args: args{
+			name: "Run a diff prints a list of files that need the default license header",
+			args: runParams{
 				args:     []string{"testdata"},
 				license:  defaultLicense,
 				licensor: defaultLicensor,
@@ -145,8 +159,49 @@ testdata/singlelevel/wrapper.go: is missing the license header
 `[1:],
 		},
 		{
+			name: "Run a diff prints a list of files that need the default license header and notice",
+			args: runParams{
+				args:          []string{"testdata"},
+				license:       defaultLicense,
+				licensor:      defaultLicensor,
+				exclude:       []string{"excludedpath", "x-pack", "cloud"},
+				ext:           defaultExt,
+				dry:           true,
+				notice:        true,
+				noticeProject: "SomeProject",
+				analyseFunc:   goModAnalyseFunc,
+			},
+			want: 1,
+			err:  &Error{code: 1},
+			wantOutput: `
+testdata/multilevel/doc.go: is missing the license header
+testdata/multilevel/main.go: is missing the license header
+testdata/multilevel/sublevel/autogen.go: is missing the license header
+testdata/multilevel/sublevel/doc.go: is missing the license header
+testdata/multilevel/sublevel/partial.go: is missing the license header
+testdata/singlelevel/doc.go: is missing the license header
+testdata/singlelevel/main.go: is missing the license header
+testdata/singlelevel/wrapper.go: is missing the license header
+Generating NOTICE...
+
+SomeProject
+Copyright 2019 Elasticsearch B.V.
+
+This product includes software developed at Elasticsearch B.V. and
+third-party software developed by the licenses listed below.
+
+=========================================================================
+
+gopkg.in/src-d/go-license-detector.v2    Apache-2.0
+github.com/sirkon/goproxy                MIT
+github.com/hashicorp/multierror-go       MPL-2.0
+
+=========================================================================
+`[1:],
+		},
+		{
 			name: "Run a diff prints a list of files that need the Elastic license header",
-			args: args{
+			args: runParams{
 				args:     []string{"testdata"},
 				license:  "Elastic",
 				licensor: defaultLicensor,
@@ -173,7 +228,7 @@ testdata/x-pack/wrong.go: is missing the license header
 		},
 		{
 			name: "Run a diff prints a list of files that need the Cloud license header",
-			args: args{
+			args: runParams{
 				args:     []string{"testdata"},
 				license:  "Cloud",
 				licensor: defaultLicensor,
@@ -200,7 +255,7 @@ testdata/x-pack/wrong.go: is missing the license header
 		},
 		{
 			name: "Run against an unexisting dir fails",
-			args: args{
+			args: runParams{
 				args:     []string{"ignore"},
 				license:  defaultLicense,
 				licensor: defaultLicensor,
@@ -212,7 +267,7 @@ testdata/x-pack/wrong.go: is missing the license header
 		},
 		{
 			name: "Unknown license fails",
-			args: args{
+			args: runParams{
 				args:     []string{"ignore"},
 				license:  "foo",
 				licensor: defaultLicensor,
@@ -223,14 +278,17 @@ testdata/x-pack/wrong.go: is missing the license header
 			err:  &Error{err: errors.New("unknown license: foo"), code: 7},
 		},
 		{
-			name: "Run with default mode rewrites the source files",
-			args: args{
-				args:     []string{"testdata"},
-				license:  defaultLicense,
-				licensor: defaultLicensor,
-				exclude:  []string{"excludedpath", "x-pack", "cloud"},
-				ext:      defaultExt,
-				dry:      false,
+			name: "Run with default mode rewrites the source files and notice",
+			args: runParams{
+				args:          []string{"testdata"},
+				license:       defaultLicense,
+				licensor:      defaultLicensor,
+				exclude:       []string{"excludedpath", "x-pack", "cloud"},
+				ext:           defaultExt,
+				dry:           false,
+				notice:        true,
+				noticeProject: "SomeProject",
+				analyseFunc:   goModAnalyseFunc,
 			},
 			want:       0,
 			wantGolden: true,
@@ -243,7 +301,8 @@ testdata/x-pack/wrong.go: is missing the license header
 			}
 
 			var buf = new(bytes.Buffer)
-			var err = run(tt.args.args, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf)
+			tt.args.out = buf
+			var err = run(tt.args)
 			if !reflect.DeepEqual(err, tt.err) {
 				t.Errorf("run() error = %v, wantErr %v", err, tt.err)
 				return
@@ -263,7 +322,9 @@ testdata/x-pack/wrong.go: is missing the license header
 			if tt.wantGolden {
 				if *update {
 					copyFixtures(t, "golden")
-					if err := run([]string{"golden"}, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
+					params := tt.args
+					params.args = []string{"golden"}
+					if err := run(params); err != nil {
 						t.Fatal(err)
 					}
 				}

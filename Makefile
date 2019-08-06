@@ -8,6 +8,7 @@ GOIMPORTS_PRESENT := $(shell command -v goimports 2> /dev/null)
 GORELEASER_PRESENT := $(shell command -v goreleaser 2> /dev/null)
 RELEASED = $(shell git tag -l $(VERSION))
 DEFAULT_LDFLAGS ?= -X main.version=$(VERSION)-dev -X main.commit=$(shell git rev-parse HEAD)
+LICENSER_FORMAT_FLAGS ?= -notice -notice-year 2018 -notice-project-name "Go Licenser"
 
 define HELP
 /////////////////////////////////////////
@@ -84,7 +85,7 @@ lint: build
 format: deps build
 	@ gofmt -e -w -s .
 	@ goimports -w .
-	@ ./bin/go-licenser -exclude golden
+	@ ./bin/go-licenser -exclude golden $(LICENSER_FORMAT_FLAGS)
 
 .PHONY: release
 release: deps release_deps

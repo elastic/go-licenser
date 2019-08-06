@@ -1,5 +1,5 @@
-Go Licenser
-Copyright 2018-2019 Elasticsearch B.V.
+SomeProject
+Copyright 2019 Elasticsearch B.V.
 
 This product includes software developed at Elasticsearch B.V. and
 third-party software developed by the licenses listed below.
@@ -7,8 +7,7 @@ third-party software developed by the licenses listed below.
 =========================================================================
 
 gopkg.in/src-d/go-license-detector.v2    Apache-2.0
-golang.org/x/exp                         BSD-3-Clause
 github.com/sirkon/goproxy                MIT
-github.com/hashicorp/go-multierror       MPL-2.0
+github.com/hashicorp/multierror-go       MPL-2.0
 
 =========================================================================
