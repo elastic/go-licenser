@@ -314,12 +314,12 @@ testdata/x-pack/wrong.go: is missing the license header
 			}
 
 			var gotOutput = buf.String()
-			splitOutput := strings.Split(gotOutput, "Generating")
-			if len(splitOutput) > 1 {
-				gotOutput = filepath.FromSlash(splitOutput[0]) + "Generating" + splitOutput[1]
+			if so := strings.Split(tt.wantOutput, "Generating"); len(so) > 1 {
+				tt.wantOutput = filepath.FromSlash(so[0]) + "Generating" + so[1]
 			} else {
-				gotOutput = filepath.FromSlash(gotOutput)
+				tt.wantOutput = filepath.FromSlash(tt.wantOutput)
 			}
+
 			if gotOutput != tt.wantOutput {
 				t.Errorf("Output = \n%v\n want \n%v", gotOutput, tt.wantOutput)
 			}

@@ -22,9 +22,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 	"reflect"
-	"syscall"
 	"testing"
 
 	"github.com/hashicorp/go-multierror"
@@ -144,20 +142,6 @@ func TestGenerateNotice(t *testing.T) {
 				errors.New("notice: AnalyseFunc is missing"),
 				errors.New("notice: missing project name"),
 			}},
-		},
-		{
-			name: "fails obtaining the module path",
-			args: args{params: GenerateNoticeParams{
-				GoModFile:   filepath.Join("tmp", "unexisting.mod"),
-				AnalyseFunc: genAnalyseFunc(nil),
-				Project:     "some",
-			}},
-			want: Notice{Project: "some", ProjectYears: "2019"},
-			err: &os.PathError{
-				Op:   "open",
-				Path: filepath.Join("tmp", "unexisting.mod"),
-				Err:  syscall.ENOENT,
-			},
 		},
 		{
 			name: "fails parsing gomod when the format is wrong",
