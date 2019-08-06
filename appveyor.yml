@@ -25,8 +25,10 @@ install:
 
 before_build:
   - go mod download
-  - set GO111MODULE=; go get -u golang.org/x/lint/golint
-  - set GO111MODULE=; go get -u golang.org/x/tools/cmd/goimports
+  - set GO111MODULE=off
+  - go get -u golang.org/x/lint/golint
+  - go get -u golang.org/x/tools/cmd/goimports
+  - set GO111MODULE=on
   - golint -set_exit_status .
   - gofmt -d -e -s .
   - goimports -d .
