@@ -22,7 +22,7 @@ define HELP
 
 ## Development targets
 
-- deps:                   It will install the dependencies required to run developemtn targets.
+- deps:                   It will install the dependencies required to run development targets.
 - unit:                   Runs the unit tests.
 - lint:                   Runs the linters.
 - format:                 Formats the source files according to gofmt, goimports and go-licenser.
@@ -49,6 +49,7 @@ endif
 ifndef GOIMPORTS_PRESENT
 	@ go get -u golang.org/x/tools/cmd/goimports
 endif
+	@ GO111MODULE=on go mod download
 
 .PHONY: release_deps
 release_deps:
