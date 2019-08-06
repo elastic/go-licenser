@@ -1,5 +1,6 @@
 export VERSION := 0.2.0
 export GO111MODULE ?= on
+export CGO_ENABLED ?= 0
 OWNER ?= elastic
 REPO ?= go-licenser
 TEST_UNIT_FLAGS ?= -timeout 10s -p 4 -race -cover
