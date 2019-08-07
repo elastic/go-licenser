@@ -200,6 +200,10 @@ func getModulePaths(file string) ([]string, error) {
 	}
 
 	var paths = make([]string, 0, len(module.Require))
+	// Each dependency is processed and the full filepath is constructed.
+	// Additionally, dependencies that have Uppercase characters are converted
+	// to !<lowercase> since it's how go modules are downloaded in the local
+	// filesystem.
 	for dep, version := range module.Require {
 		re, err := regexp.Compile("([A-Z]+)")
 		if err != nil {
@@ -229,12 +233,18 @@ func getModulePaths(file string) ([]string, error) {
 func getLicenses(analyseFunc func(args ...string) []licensedb.Result, paths ...string) []Dependency {
 	var dependencies = make([]Dependency, 0, len(paths))
 	for _, res := range analyseFunc(paths...) {
+		// Replaces the prefix in front of the Go dependency name and the
+		// @<version> that follows, so that a clean name is returned.
 		arg := strings.Replace(res.Arg, goPkgPath()+"/", "", -1)
 		if depv := strings.Split(arg, "@"); len(depv) > 1 {
 			arg = strings.Replace(arg, "@"+depv[1], "", -1)
 		}
 
+		// When the license type hasn't been detected, the "Error" is treated
+		// as the License so it can be reflected.
 		if len(res.Matches) == 0 {
+			// Removes the break line at the end of the error string and
+			// the local goPath if it's there.
 			res.Matches = []licensedb.Match{{
 				License: strings.Replace(
 					strings.Replace(res.ErrStr, "\n", "", 1),
@@ -243,6 +253,8 @@ func getLicenses(analyseFunc func(args ...string) []licensedb.Result, paths ...s
 			}}
 		}
 
+		// The ! character is removed for any uppercase dependencies and the
+		// dependency on the NOTICE will have theose characters lowercased.
 		dependencies = append(dependencies, Dependency{
 			Name:    strings.Replace(arg, "!", "", -1),
 			License: res.Matches[0].License,
@@ -266,9 +278,7 @@ func writeTemplate(notice *Notice, format string, writer io.Writer) error {
 	var w = tabwriter.NewWriter(buf, 4, 2, 4, ' ', 0)
 	var deps = notice.Dependencies
 	for i := range deps {
-		w.Write([]byte(
-			deps[i].Name + "\t" + deps[i].License + "\n",
-		))
+		w.Write([]byte(deps[i].Name + "\t" + deps[i].License + "\n"))
 	}
 
 	w.Flush()

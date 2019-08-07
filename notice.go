@@ -30,23 +30,27 @@ import (
 func doNotice(path string, params runParams) error {
 	// TODO: potentially use git to extract the date.
 	var startDate, _ = time.Parse("2006", params.noticeYear)
-	if noticeYear == "" {
+
+	// When the noticeYear hasn't been specified, it tries to autodiscover
+	// which year the project started by gathering the oldest modification
+	// timestamp in files by walking the directory.
+	if params.noticeYear == "" {
 		startDate = time.Now()
-	}
-	if err := filepath.Walk(path,
-		func(p string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-			if info.IsDir() || strings.Contains(p, ".git") {
+		if err := filepath.Walk(path,
+			func(p string, info os.FileInfo, err error) error {
+				if err != nil {
+					return err
+				}
+				if info.IsDir() || strings.Contains(p, ".git") {
+					return nil
+				}
+				if fileMod := info.ModTime(); fileMod.Before(startDate) {
+					startDate = fileMod
+				}
 				return nil
-			}
-			if fileMod := info.ModTime(); fileMod.Before(startDate) {
-				startDate = fileMod
-			}
-			return nil
-		}); err != nil {
-		return err
+			}); err != nil {
+			return err
+		}
 	}
 
 	var noticeWriter = params.out
