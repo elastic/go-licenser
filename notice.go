@@ -54,9 +54,8 @@ func doNotice(path string, params runParams) error {
 	}
 
 	var noticeWriter = params.out
-	if params.dry {
-		fmt.Fprintf(noticeWriter, "Generating NOTICE...\n\n")
-	} else {
+	var noticeMessage = "Dumping NOTICE to output...\n\n"
+	if !params.dry {
 		var noticeFilePath = filepath.Join(path, noticeFile)
 		f, err := openTruncateFile(noticeFilePath)
 		if err != nil {
@@ -64,7 +63,9 @@ func doNotice(path string, params runParams) error {
 		}
 		defer f.Close()
 		noticeWriter = f
+		noticeMessage = "Generating NOTICE file...\n\n"
 	}
+	fmt.Fprintf(params.out, noticeMessage)
 
 	if params.noticeProject == "" {
 		absPath, _ := filepath.Abs(path)

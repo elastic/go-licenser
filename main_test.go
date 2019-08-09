@@ -181,7 +181,7 @@ testdata/multilevel/sublevel/partial.go: is missing the license header
 testdata/singlelevel/doc.go: is missing the license header
 testdata/singlelevel/main.go: is missing the license header
 testdata/singlelevel/wrapper.go: is missing the license header
-Generating NOTICE...
+Dumping NOTICE to output...
 
 SomeProject
 Copyright 2019 Elasticsearch B.V.
@@ -290,6 +290,7 @@ testdata/x-pack/wrong.go: is missing the license header
 				analyseFunc:   goModAnalyseFunc,
 			},
 			want:       0,
+			wantOutput: "Generating NOTICE file...\n\n",
 			wantGolden: true,
 		},
 	}
