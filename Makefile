@@ -1,4 +1,4 @@
-export VERSION := 0.2.0
+export VERSION := v0.3.0
 export GO111MODULE ?= on
 OWNER ?= elastic
 REPO ?= go-licenser
