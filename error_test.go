@@ -37,11 +37,11 @@ func TestCode(t *testing.T) {
 			want: 0,
 		},
 		{
-			name: "standard error returns 255",
+			name: "standard error returns 0",
 			args: args{
 				e: errors.New("an error"),
 			},
-			want: 255,
+			want: 0,
 		},
 		{
 			name: "Error error returns 1",

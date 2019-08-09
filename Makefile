@@ -9,7 +9,6 @@ GOIMPORTS_PRESENT := $(shell command -v goimports 2> /dev/null)
 GORELEASER_PRESENT := $(shell command -v goreleaser 2> /dev/null)
 RELEASED = $(shell git tag -l $(VERSION))
 DEFAULT_LDFLAGS ?= -X main.version=$(VERSION)-dev -X main.commit=$(shell git rev-parse HEAD)
-LICENSER_FORMAT_FLAGS ?= -notice -notice-year 2018 -notice-project-name "Go Licenser"
 
 define HELP
 /////////////////////////////////////////
@@ -23,7 +22,7 @@ define HELP
 
 ## Development targets
 
-- deps:                   It will install the dependencies required to run development targets.
+- deps:                   It will install the dependencies required to run developemtn targets.
 - unit:                   Runs the unit tests.
 - lint:                   Runs the linters.
 - format:                 Formats the source files according to gofmt, goimports and go-licenser.
@@ -45,12 +44,11 @@ help:
 .PHONY: deps
 deps:
 ifndef GOLINT_PRESENT
-	@ GO111MODULE=off go get -u golang.org/x/lint/golint
+	@ go get -u golang.org/x/lint/golint
 endif
 ifndef GOIMPORTS_PRESENT
-	@ GO111MODULE=off go get -u golang.org/x/tools/cmd/goimports
+	@ go get -u golang.org/x/tools/cmd/goimports
 endif
-	@ go mod download
 
 .PHONY: release_deps
 release_deps:
@@ -71,11 +69,11 @@ unit:
 
 .PHONY: build
 build: deps
-	@ CGO_ENABLED=0 go build -o bin/$(REPO) -ldflags="$(DEFAULT_LDFLAGS)"
+	@ go build -o bin/$(REPO) -ldflags="$(DEFAULT_LDFLAGS)"
 
 .PHONY: install
 install: deps
-	@ CGO_ENABLED=0 go install
+	@ go install
 
 .PHONY: lint
 lint: build
@@ -87,7 +85,7 @@ lint: build
 format: deps build
 	@ gofmt -e -w -s .
 	@ goimports -w .
-	@ ./bin/go-licenser -exclude golden $(LICENSER_FORMAT_FLAGS)
+	@ ./bin/go-licenser -exclude golden
 
 .PHONY: release
 release: deps release_deps

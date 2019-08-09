@@ -32,11 +32,8 @@ func (e Error) Error() string {
 
 // Code returns the exitcode for the error
 func Code(e error) int {
-	if e == nil {
-		return 0
-	}
 	if err, ok := e.(*Error); ok {
 		return err.code
 	}
-	return 255
+	return 0
 }
