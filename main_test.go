@@ -314,8 +314,8 @@ testdata/x-pack/wrong.go: is missing the license header
 			}
 
 			var gotOutput = buf.String()
-			if so := strings.Split(tt.wantOutput, "Generating"); len(so) > 1 {
-				tt.wantOutput = filepath.FromSlash(so[0]) + "Generating" + so[1]
+			if so := strings.Split(tt.wantOutput, "Dumping"); len(so) > 1 {
+				tt.wantOutput = filepath.FromSlash(so[0]) + "Dumping" + so[1]
 			} else {
 				tt.wantOutput = filepath.FromSlash(tt.wantOutput)
 			}
