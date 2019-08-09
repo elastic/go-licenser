@@ -8,7 +8,9 @@ clone_folder: c:\gopath\src\github.com\elastic\go-licenser
 
 environment:
   GOPATH: c:\gopath
-  GOVERSION: 1.10
+  GOVERSION: 1.12
+  GO111MODULE: on
+  CGO_ENABLED: 0
 
 # Build
 
@@ -23,8 +25,11 @@ install:
   - go env
 
 before_build:
+  - go mod download
+  - set GO111MODULE=off
   - go get -u golang.org/x/lint/golint
   - go get -u golang.org/x/tools/cmd/goimports
+  - set GO111MODULE=on
   - golint -set_exit_status .
   - gofmt -d -e -s .
   - goimports -d .
@@ -35,4 +40,4 @@ build_script:
 
 test_script:
   - go-licenser -d -exclude golden
-  - go test -timeout 10s -p 4 -race -cover ./...
+  - go test -timeout 10s -p 4 -cover ./...

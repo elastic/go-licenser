@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/elastic/go-licenser/licensing"
+	"gopkg.in/src-d/go-license-detector.v2/licensedb"
 )
 
 const (
@@ -45,6 +46,8 @@ const (
 	exitFailedToOpenWalkFile
 	errFailedRewrittingFile
 	errUnknownLicense
+	errOpenFileFailed
+	errGenerateNoticeFailed
 )
 
 var usageText = `
@@ -52,6 +55,9 @@ Usage: go-licenser [flags] [path]
 
   go-licenser walks the specified path recursiely and appends a license Header if the current
   header doesn't match the one found in the file.
+
+  Using the -notice flag a compiled list of the project's dependencies and licenses is compiled
+  after the "go.mod" file is inspected. If the dependencies aren't found locally, it will fail.
 
 Options:
 
@@ -103,6 +109,11 @@ var Headers = map[string][]string{
 var (
 	dryRun             bool
 	showVersion        bool
+	generateNotice     bool
+	noticeYear         string
+	noticeFile         string
+	noticeHeader       string
+	noticeProject      string
 	extension          string
 	args               []string
 	license            string
@@ -110,6 +121,22 @@ var (
 	exclude            sliceFlag
 	defaultExludedDirs = []string{"vendor", ".git"}
 )
+
+type runParams struct {
+	args          []string
+	license       string
+	licensor      string
+	exclude       []string
+	ext           string
+	dry           bool
+	notice        bool
+	noticeYear    string
+	noticeFile    string
+	noticeHeader  string
+	noticeProject string
+	out           io.Writer
+	analyseFunc   func(args ...string) []licensedb.Result
+}
 
 type sliceFlag []string
 
@@ -130,6 +157,11 @@ func init() {
 	flag.Var(&exclude, "exclude", `path to exclude (can be specified multiple times).`)
 	flag.BoolVar(&dryRun, "d", false, `skips rewriting files and returns exitcode 1 if any discrepancies are found.`)
 	flag.BoolVar(&showVersion, "version", false, `prints out the binary version.`)
+	flag.BoolVar(&generateNotice, "notice", false, `generates a NOTICE (use -notice-file to change it) file on the folder where it's being run.`)
+	flag.StringVar(&noticeYear, "notice-year", "", `specifies the start of the project so the notice file reflects it.`)
+	flag.StringVar(&noticeFile, "notice-file", "NOTICE", `specifies the file where to write the license notice.`)
+	flag.StringVar(&noticeHeader, "notice-header", "", `specifies the notice header Go Template.`)
+	flag.StringVar(&noticeProject, "notice-project-name", "", `specifies the notice project name at the top of the Go Template (defaults to folder name).`)
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
 	flag.StringVar(&license, "license", defaultLicense, "sets the license type to check: ASL2, Elastic, Cloud")
 	flag.StringVar(&licensor, "licensor", defaultLicensor, "sets the name of the licensor")
@@ -144,7 +176,21 @@ func main() {
 		return
 	}
 
-	err := run(args, license, licensor, exclude, extension, dryRun, os.Stdout)
+	err := run(runParams{
+		args:          args,
+		license:       license,
+		licensor:      licensor,
+		exclude:       exclude,
+		ext:           extension,
+		dry:           dryRun,
+		notice:        generateNotice,
+		noticeYear:    noticeYear,
+		noticeFile:    noticeFile,
+		noticeHeader:  noticeHeader,
+		noticeProject: noticeProject,
+		out:           os.Stdout,
+		analyseFunc:   licensedb.Analyse,
+	})
 	if err != nil && err.Error() != "<nil>" {
 		fmt.Fprint(os.Stderr, err)
 	}
@@ -152,31 +198,46 @@ func main() {
 	os.Exit(Code(err))
 }
 
-func run(args []string, license, licensor string, exclude []string, ext string, dry bool, out io.Writer) error {
-	header, ok := Headers[license]
+func run(params runParams) error {
+	header, ok := Headers[params.license]
 	if !ok {
-		return &Error{err: fmt.Errorf("unknown license: %s", license), code: errUnknownLicense}
+		return &Error{err: fmt.Errorf("unknown license: %s", params.license), code: errUnknownLicense}
 	}
 
 	var headerBytes []byte
 	for i, line := range header {
 		if strings.Contains(line, "%s") {
-			header[i] = fmt.Sprintf(line, licensor)
+			header[i] = fmt.Sprintf(line, params.licensor)
 		}
 		headerBytes = append(headerBytes, []byte(header[i])...)
 		headerBytes = append(headerBytes, []byte("\n")...)
 	}
 
 	var path = defaultPath
-	if len(args) > 0 {
-		path = args[0]
+	if len(params.args) > 0 {
+		path = params.args[0]
 	}
 
 	if _, err := os.Stat(path); err != nil {
 		return &Error{err: err, code: exitFailedToStatTree}
 	}
 
-	return walk(path, ext, license, headerBytes, exclude, dry, out)
+	var walkErr error
+	if err := walk(path, params.ext, params.license, headerBytes,
+		params.exclude, params.dry, params.out,
+	); err != nil {
+		walkErr = err
+	}
+
+	if !params.notice {
+		return walkErr
+	}
+
+	if err := doNotice(path, params); err != nil {
+		return err
+	}
+
+	return walkErr
 }
 
 func reportFile(out io.Writer, f string) {
@@ -255,4 +316,15 @@ func stringInSlice(a string, list []string) bool {
 func usageFlag() {
 	fmt.Fprintf(os.Stderr, usageText)
 	flag.PrintDefaults()
+}
+
+func openTruncateFile(p string) (*os.File, error) {
+	f, err := os.OpenFile(p, os.O_CREATE|os.O_WRONLY|os.O_APPEND, os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
+
+	f.Truncate(0)
+	f.Seek(0, 0)
+	return f, nil
 }
