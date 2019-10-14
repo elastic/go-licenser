@@ -23,6 +23,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/elastic/go-licenser/licensing"
@@ -127,11 +128,17 @@ func (f *sliceFlag) Set(value string) error {
 }
 
 func init() {
+	var licenseTypes []string
+	for k := range Headers {
+		licenseTypes = append(licenseTypes, k)
+	}
+	sort.Strings(licenseTypes)
+
 	flag.Var(&exclude, "exclude", `path to exclude (can be specified multiple times).`)
 	flag.BoolVar(&dryRun, "d", false, `skips rewriting files and returns exitcode 1 if any discrepancies are found.`)
 	flag.BoolVar(&showVersion, "version", false, `prints out the binary version.`)
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
-	flag.StringVar(&license, "license", defaultLicense, "sets the license type to check: ASL2, Elastic, Cloud")
+	flag.StringVar(&license, "license", defaultLicense, fmt.Sprintf("sets the license type to check: %s", strings.Join(licenseTypes, ", ")))
 	flag.StringVar(&licensor, "licensor", defaultLicensor, "sets the name of the licensor")
 	flag.Usage = usageFlag
 	flag.Parse()
