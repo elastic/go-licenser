@@ -25,7 +25,7 @@ go get -u github.com/elastic/go-licenser
 ```
 Usage: go-licenser [flags] [path]
 
-  go-licenser walks the specified path recursiely and appends a license Header if the current
+  go-licenser walks the specified path recursively and appends a license Header if the current
   header doesn't match the one found in the file.
 
 Options:
