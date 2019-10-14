@@ -77,6 +77,11 @@ var Headers = map[string][]string{
 		`// specific language governing permissions and limitations`,
 		`// under the License.`,
 	},
+	"ASL2-Short": {
+		`// Licensed to %s under one or more agreements.`,
+		`// %s licenses this file to you under the Apache 2.0 License.`,
+		`// See the LICENSE file in the project root for more information.`,
+	},
 	"Elastic": {
 		`// Copyright Elasticsearch B.V. and/or licensed to Elasticsearch B.V. under one`,
 		`// or more contributor license agreements. Licensed under the Elastic License;`,
