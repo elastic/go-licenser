@@ -1,14 +1,15 @@
-export VERSION := v0.3.0
+export VERSION := v0.3.1
 export GO111MODULE ?= on
+export GOBIN = $(shell pwd)/bin
 OWNER ?= elastic
 REPO ?= go-licenser
 TEST_UNIT_FLAGS ?= -timeout 10s -p 4 -race -cover
 TEST_UNIT_PACKAGE ?= ./...
 GOLINT_PRESENT := $(shell command -v golint 2> /dev/null)
 GOIMPORTS_PRESENT := $(shell command -v goimports 2> /dev/null)
-GORELEASER_PRESENT := $(shell command -v goreleaser 2> /dev/null)
 RELEASED = $(shell git tag -l $(VERSION))
 DEFAULT_LDFLAGS ?= -X main.version=$(VERSION)-dev -X main.commit=$(shell git rev-parse HEAD)
+include build/Makefile.deps
 
 define HELP
 /////////////////////////////////////////
@@ -51,12 +52,7 @@ ifndef GOIMPORTS_PRESENT
 endif
 
 .PHONY: release_deps
-release_deps:
-ifndef GORELEASER_PRESENT
-	@ echo "-> goreleaser not found in path, please install it following the instructions:"
-	@ echo "-> https://goreleaser.com/introduction"
-	@ exit 1
-endif
+release_deps: $(GOBIN)/goreleaser
 
 .PHONY: update-golden-files
 update-golden-files:
@@ -77,15 +73,15 @@ install: deps
 
 .PHONY: lint
 lint: build
-	@ golint -set_exit_status $(shell go list ./...)
+	@ $(GOBIN)/golint -set_exit_status $(shell go list ./...)
 	@ gofmt -d -e -s .
-	@ ./bin/go-licenser -d -exclude golden
+	@ $(GOBIN)/go-licenser -d -exclude golden
 
 .PHONY: format
 format: deps build
 	@ gofmt -e -w -s .
-	@ goimports -w .
-	@ ./bin/go-licenser -exclude golden
+	@ $(GOBIN)/goimports -w .
+	@ $(GOBIN)/go-licenser -exclude golden
 
 .PHONY: release
 release: deps release_deps
@@ -95,7 +91,7 @@ ifeq ($(strip $(RELEASED)),)
 	@ echo "-> Creating and pushing a new tag $(VERSION)..."
 	@ git tag $(VERSION)
 	@ git push upstream $(VERSION)
-	@ goreleaser release --rm-dist
+	@ $(GOBIN)/goreleaser release --skip-validate --rm-dist
 else
 	@ echo "-> git tag $(VERSION) already present, skipping release..."
 endif
@@ -103,4 +99,4 @@ endif
 .PHONY: snapshot
 snapshot: deps release_deps
 	@ echo "-> Snapshotting $(REPO) $(VERSION)..."
-	@ goreleaser release --snapshot --rm-dist
+	@ $(GOBIN)/goreleaser release --snapshot --rm-dist
