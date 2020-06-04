@@ -1,0 +1,17 @@
+VERSION_DIR:=$(GOBIN)/versions
+
+VERSION_GORELEASER:=v0.136.0
+
+$(GOBIN):
+	@ mkdir -p $(GOBIN)
+
+$(VERSION_DIR): | $(GOBIN)
+	@ mkdir -p $(GOBIN)/versions
+
+$(VERSION_DIR)/.version-goreleaser-$(VERSION_GORELEASER): | $(VERSION_DIR)
+	@ rm -f $(VERSION_DIR)/.version-goreleaser-*
+	@ echo $(VERSION_GORELEASER) > $(VERSION_DIR)/.version-goreleaser-$(VERSION_GORELEASER)
+
+$(GOBIN)/goreleaser: $(VERSION_DIR)/.version-goreleaser-$(VERSION_GORELEASER)
+	@ echo "-> Installing goreleaser..."
+	@ curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh| sh -s -- -b $(GOBIN) $(VERSION_GORELEASER)

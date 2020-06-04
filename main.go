@@ -132,7 +132,7 @@ func (f *sliceFlag) Set(value string) error {
 	return nil
 }
 
-func init() {
+func initFlags() {
 	var licenseTypes []string
 	for k := range Headers {
 		licenseTypes = append(licenseTypes, k)
@@ -151,6 +151,8 @@ func init() {
 }
 
 func main() {
+	initFlags()
+
 	if showVersion {
 		fmt.Printf("go-licenser %s (%s)\n", version, commit)
 		return
