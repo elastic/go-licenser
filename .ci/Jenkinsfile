@@ -31,22 +31,67 @@ pipeline {
         stash allowEmpty: true, name: 'source', useDefaultExcludes: false
       }
     }
-    stage('Local') {
-      steps {
-        cleanup()
-        withGoEnv(){
-          dir("${BASE_DIR}"){
-            sh(label: 'local',script: 'make local')
+    stage('Test') {
+      failFast false
+      matrix {
+        options { skipDefaultCheckout() }
+        axes {
+          axis {
+            name 'GO_VERSION'
+            values '1.15.6', '1.11', '1.10', '1.9'
+          }
+          axis {
+            name 'PLATFORM'
+            values 'ubuntu-18 && immutable', 'macosx'
           }
         }
-      }
-    }
-    stage('Test') {
-      steps {
-        cleanup()
-        withGoEnv(){
-          dir("${BASE_DIR}"){
-            sh(label: 'test', script: 'make test')
+        excludes {
+          exclude {
+            axis {
+              name 'PLATFORM'
+              values 'macosx'
+            }
+            axis {
+              name 'GO_VERSION'
+              values '1.11'
+            }
+          }
+          exclude {
+            axis {
+              name 'PLATFORM'
+              notValues 'macosx'
+            }
+            axis {
+              name 'GO_VERSION'
+              values '1.10'
+            }
+          }
+          exclude {
+            axis {
+              name 'PLATFORM'
+              notValues 'macosx'
+            }
+            axis {
+              name 'GO_VERSION'
+              values '1.9'
+            }
+          }
+        }
+        stages {
+          stage('Test') {
+            agent { label "${PLATFORM}" }
+            steps {
+              withGithubNotify(context: "Test-${GO_VERSION}-${PLATFORM}") {
+                cleanup()
+                withGoEnv(version: "${GO_VERSION}"){
+                  dir("${BASE_DIR}"){
+                    sh(label: 'deps', script: 'make deps')
+                    sh(label: 'lint', script: 'make lint')
+                    sh(label: 'unit', script: 'make unit')
+                  }
+                }
+              }
+            }
           }
         }
       }
