@@ -1,0 +1,107 @@
+#!/usr/bin/env groovy
+
+@Library('apm@current') _
+
+pipeline {
+  agent { label 'ubuntu-18 && immutable' }
+  environment {
+    REPO = "go-licenser"
+    BASE_DIR = "src/github.com/elastic/${env.REPO}"
+    JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
+    PIPELINE_LOG_LEVEL = 'INFO'
+    GO111MODULE = 'auto'
+  }
+  options {
+    timeout(time: 1, unit: 'HOURS')
+    buildDiscarder(logRotator(numToKeepStr: '20', artifactNumToKeepStr: '20', daysToKeepStr: '30'))
+    timestamps()
+    ansiColor('xterm')
+    disableResume()
+    durabilityHint('PERFORMANCE_OPTIMIZED')
+    rateLimitBuilds(throttle: [count: 60, durationName: 'hour', userBoost: true])
+    quietPeriod(10)
+  }
+  triggers {
+    issueCommentTrigger('(?i)(.*(?:jenkins\\W+)?run\\W+(?:the\\W+)?tests(?:\\W+please)?.*|^\\/test$)')
+  }
+  stages {
+    stage('Checkout') {
+      steps {
+        deleteDir()
+        gitCheckout(basedir: "${BASE_DIR}")
+        stash allowEmpty: true, name: 'source', useDefaultExcludes: false
+      }
+    }
+    stage('Test') {
+      failFast false
+      matrix {
+        options { skipDefaultCheckout() }
+        axes {
+          axis {
+            name 'GO_VERSION'
+            values '1.15.6', '1.11', '1.10', '1.9'
+          }
+          axis {
+            name 'PLATFORM'
+            values 'ubuntu-18 && immutable', 'macosx'
+          }
+        }
+        excludes {
+          exclude {
+            axis {
+              name 'PLATFORM'
+              values 'macosx'
+            }
+            axis {
+              name 'GO_VERSION'
+              values '1.11'
+            }
+          }
+          exclude {
+            axis {
+              name 'PLATFORM'
+              notValues 'macosx'
+            }
+            axis {
+              name 'GO_VERSION'
+              values '1.10'
+            }
+          }
+          exclude {
+            axis {
+              name 'PLATFORM'
+              notValues 'macosx'
+            }
+            axis {
+              name 'GO_VERSION'
+              values '1.9'
+            }
+          }
+        }
+        stages {
+          stage('Test') {
+            agent { label "${PLATFORM}" }
+            steps {
+              withGithubNotify(context: "Test-${GO_VERSION}-${PLATFORM}") {
+                deleteDir()
+                unstash 'source'
+                withGoEnv(version: "${GO_VERSION}"){
+                  dir("${BASE_DIR}"){
+                    sh(label: "deps for ${GO_VERSION} in ${PLATFORM}", script: 'make deps')
+                    sh(label: "lint for ${GO_VERSION} in ${PLATFORM}", script: 'make lint')
+                    sh(label: "unit for ${GO_VERSION} in ${PLATFORM}", script: 'make unit')
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  post {
+    cleanup {
+      notifyBuildResult(prComment: true)
+    }
+  }
+}
