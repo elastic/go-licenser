@@ -43,14 +43,14 @@ pipeline {
           }
           axis {
             name 'PLATFORM'
-            values 'ubuntu-18 && immutable', 'macosx'
+            values 'ubuntu-18 && immutable', 'macosx&&x86_64'
           }
         }
         excludes {
           exclude {
             axis {
               name 'PLATFORM'
-              values 'macosx'
+              values 'macosx&&x86_64'
             }
             axis {
               name 'GO_VERSION'
@@ -60,7 +60,7 @@ pipeline {
           exclude {
             axis {
               name 'PLATFORM'
-              notValues 'macosx'
+              notValues 'macosx&&x86_64'
             }
             axis {
               name 'GO_VERSION'
@@ -70,7 +70,7 @@ pipeline {
           exclude {
             axis {
               name 'PLATFORM'
-              notValues 'macosx'
+              notValues 'macosx&&x86_64'
             }
             axis {
               name 'GO_VERSION'
