@@ -16,8 +16,8 @@ install:
   - go env
 
 before_build:
-  - go get -u golang.org/x/lint/golint
-  - go get -u golang.org/x/tools/cmd/goimports
+  - go install golang.org/x/lint/golint
+  - go install golang.org/x/tools/cmd/goimports
   - golint -set_exit_status .
   - gofmt -d -e -s .
   - goimports -d .
