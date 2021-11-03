@@ -51,7 +51,7 @@ func Test_run(t *testing.T) {
 				args:     []string{"testdata"},
 				license:  defaultLicense,
 				licensor: defaultLicensor,
-				exclude:  []string{"excludedpath", "x-pack", "cloud"},
+				exclude:  []string{"excludedpath", "x-pack", "x-pack-v2", "cloud"},
 				ext:      defaultExt,
 				dry:      true,
 			},
@@ -93,6 +93,38 @@ testdata/singlelevel/main.go: is missing the license header
 testdata/singlelevel/wrapper.go: is missing the license header
 testdata/singlelevel/zrapper.go: is missing the license header
 testdata/x-pack/wrong.go: is missing the license header
+testdata/x-pack-v2/correct.go: is missing the license header
+testdata/x-pack-v2/wrong.go: is missing the license header
+`[1:],
+		},
+		{
+			name: "Run a diff prints a list of files that need the Elastic license 2.0 header",
+			args: args{
+				args:     []string{"testdata"},
+				license:  "Elasticv2",
+				licensor: defaultLicensor,
+				ext:      defaultExt,
+				dry:      true,
+			},
+			want: 1,
+			err:  &Error{code: 1},
+			wantOutput: `
+testdata/cloud/doc.go: is missing the license header
+testdata/cloud/wrong.go: is missing the license header
+testdata/excludedpath/file.go: is missing the license header
+testdata/multilevel/doc.go: is missing the license header
+testdata/multilevel/main.go: is missing the license header
+testdata/multilevel/sublevel/autogen.go: is missing the license header
+testdata/multilevel/sublevel/doc.go: is missing the license header
+testdata/multilevel/sublevel/partial.go: is missing the license header
+testdata/singlelevel/doc.go: is missing the license header
+testdata/singlelevel/main.go: is missing the license header
+testdata/singlelevel/wrapper.go: is missing the license header
+testdata/singlelevel/zrapper.go: is missing the license header
+testdata/x-pack/doc.go: is missing the license header
+testdata/x-pack/wrong.go: is missing the license header
+testdata/x-pack-v2/doc.go: is missing the license header
+testdata/x-pack-v2/wrong.go: is missing the license header
 `[1:],
 		},
 		{
@@ -120,6 +152,9 @@ testdata/singlelevel/wrapper.go: is missing the license header
 testdata/singlelevel/zrapper.go: is missing the license header
 testdata/x-pack/doc.go: is missing the license header
 testdata/x-pack/wrong.go: is missing the license header
+testdata/x-pack-v2/correct.go: is missing the license header
+testdata/x-pack-v2/doc.go: is missing the license header
+testdata/x-pack-v2/wrong.go: is missing the license header
 `[1:],
 		},
 		{
@@ -147,12 +182,64 @@ testdata/x-pack/wrong.go: is missing the license header
 			err:  &Error{err: errors.New("unknown license: foo"), code: 7},
 		},
 		{
-			name: "Run with default mode rewrites the source files",
+			name: "Check ASL2 license rewrite",
 			args: args{
 				args:     []string{"testdata"},
 				license:  defaultLicense,
 				licensor: defaultLicensor,
-				exclude:  []string{"excludedpath", "x-pack", "cloud"},
+				exclude:  []string{"excludedpath"},
+				ext:      defaultExt,
+				dry:      false,
+			},
+			want:       0,
+			wantGolden: true,
+		},
+		{
+			name: "Check ASL2-short license rewrite",
+			args: args{
+				args:     []string{"testdata"},
+				license:  "ASL2-Short",
+				licensor: defaultLicensor,
+				exclude:  []string{"excludedpath"},
+				ext:      defaultExt,
+				dry:      false,
+			},
+			want:       0,
+			wantGolden: true,
+		},
+		{
+			name: "Check Cloud license rewrite",
+			args: args{
+				args:     []string{"testdata"},
+				license:  "Cloud",
+				licensor: defaultLicensor,
+				exclude:  []string{"excludedpath"},
+				ext:      defaultExt,
+				dry:      false,
+			},
+			want:       0,
+			wantGolden: true,
+		},
+		{
+			name: "Check Elastic license rewrite",
+			args: args{
+				args:     []string{"testdata"},
+				license:  "Elastic",
+				licensor: defaultLicensor,
+				exclude:  []string{"excludedpath"},
+				ext:      defaultExt,
+				dry:      false,
+			},
+			want:       0,
+			wantGolden: true,
+		},
+		{
+			name: "Check Elastic 2.0 license rewrite",
+			args: args{
+				args:     []string{"testdata"},
+				license:  "Elasticv2",
+				licensor: defaultLicensor,
+				exclude:  []string{"excludedpath"},
 				ext:      defaultExt,
 				dry:      false,
 			},
@@ -185,13 +272,14 @@ testdata/x-pack/wrong.go: is missing the license header
 			}
 
 			if tt.wantGolden {
+				goldenDirectory := filepath.Join("golden", tt.args.license)
 				if *update {
-					copyFixtures(t, "golden")
-					if err := run([]string{"golden"}, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
+					copyFixtures(t, goldenDirectory)
+					if err := run([]string{goldenDirectory}, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
 						t.Fatal(err)
 					}
 				}
-				hashDirectories(t, "testdata", "golden")
+				hashDirectories(t, "testdata", goldenDirectory)
 			}
 		})
 	}

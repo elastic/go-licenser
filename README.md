@@ -8,6 +8,7 @@ is useful outside of Elastic **_at the current stage_**, but the `licensing` pac
 
 * Apache 2.0
 * Elastic
+* Elastic 2.0
 * Elastic Cloud
 
 ## Supported languages
@@ -36,9 +37,9 @@ Options:
   -ext string
     	sets the file extension to scan for. (default ".go")
   -license string
-    	sets the license type to check: ASL2, Elastic, Cloud (default "ASL2")
+    	sets the license type to check: ASL2, ASL2-Short, Cloud, Elastic, Elasticv2 (default "ASL2")
   -licensor string
-        sets the name of the licensor (default "Elasticsearch B.V.")
+    	sets the name of the licensor (default "Elasticsearch B.V.")
   -version
     	prints out the binary version.
 ```
