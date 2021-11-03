@@ -19,11 +19,10 @@ install:
   - go env
 
 before_build:
-  - go install golang.org/x/lint/golint
-  - go install golang.org/x/tools/cmd/goimports
-  - golint -set_exit_status .
-  - gofmt -d -e -s .
-  - goimports -d .
+  - go install
+  - '%GOPATH%\bin\golint -set_exit_status .'
+  - '%GOPATH%\bin\gofmt -d -e -s .'
+  - '%GOPATH%\bin\goimports -d .'
 
 build_script:
   - appveyor AddCompilationMessage "Starting Compilation"
