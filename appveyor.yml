@@ -8,6 +8,8 @@ clone_folder: c:\gopath\src\github.com\elastic\go-licenser
 
 # Build host
 
+environment:
+  CGO_ENABLED: 0
 stack: go 1.17
 
 # Build

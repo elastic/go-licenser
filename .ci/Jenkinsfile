@@ -46,38 +46,6 @@ pipeline {
             values 'ubuntu-18 && immutable', 'macosx&&x86_64'
           }
         }
-        excludes {
-          exclude {
-            axis {
-              name 'PLATFORM'
-              values 'macosx&&x86_64'
-            }
-            axis {
-              name 'GO_VERSION'
-              values '1.11'
-            }
-          }
-          exclude {
-            axis {
-              name 'PLATFORM'
-              notValues 'macosx&&x86_64'
-            }
-            axis {
-              name 'GO_VERSION'
-              values '1.10'
-            }
-          }
-          exclude {
-            axis {
-              name 'PLATFORM'
-              notValues 'macosx&&x86_64'
-            }
-            axis {
-              name 'GO_VERSION'
-              values '1.9'
-            }
-          }
-        }
         stages {
           stage('Test') {
             agent { label "${PLATFORM}" }
