@@ -39,7 +39,7 @@ pipeline {
         axes {
           axis {
             name 'GO_VERSION'
-            values '1.15.6', '1.11', '1.10', '1.9'
+            values '1.17.2', '1.16.8', '1.15.6', '1.11', '1.10', '1.9'
           }
           axis {
             name 'PLATFORM'
