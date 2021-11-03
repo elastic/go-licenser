@@ -15,4 +15,5 @@
 // specific language governing permissions and limitations
 // under the License.
 
+// Package testdata holds test data for the licensing cmd
 package testdata

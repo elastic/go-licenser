@@ -121,9 +121,8 @@ testdata/singlelevel/doc.go: is missing the license header
 testdata/singlelevel/main.go: is missing the license header
 testdata/singlelevel/wrapper.go: is missing the license header
 testdata/singlelevel/zrapper.go: is missing the license header
-testdata/x-pack/doc.go: is missing the license header
+testdata/x-pack/correct.go: is missing the license header
 testdata/x-pack/wrong.go: is missing the license header
-testdata/x-pack-v2/doc.go: is missing the license header
 testdata/x-pack-v2/wrong.go: is missing the license header
 `[1:],
 		},
@@ -150,10 +149,9 @@ testdata/singlelevel/doc.go: is missing the license header
 testdata/singlelevel/main.go: is missing the license header
 testdata/singlelevel/wrapper.go: is missing the license header
 testdata/singlelevel/zrapper.go: is missing the license header
-testdata/x-pack/doc.go: is missing the license header
+testdata/x-pack/correct.go: is missing the license header
 testdata/x-pack/wrong.go: is missing the license header
 testdata/x-pack-v2/correct.go: is missing the license header
-testdata/x-pack-v2/doc.go: is missing the license header
 testdata/x-pack-v2/wrong.go: is missing the license header
 `[1:],
 		},

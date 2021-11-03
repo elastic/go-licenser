@@ -13,4 +13,5 @@
 // this material is strictly forbidden unless prior written
 // permission is obtained from Elasticsearch B.V.
 
+// Package testdata holds test data for the licensing cmd
 package testdata
