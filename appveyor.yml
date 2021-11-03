@@ -1,5 +1,7 @@
 version: "{build}"
 
+image: Visual Studio 2019
+
 # Source Config
 
 clone_folder: c:\gopath\src\github.com\elastic\go-licenser
