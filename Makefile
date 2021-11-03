@@ -1,4 +1,4 @@
-export VERSION := v0.3.1
+export VERSION := v0.4.0
 export GO111MODULE ?= on
 export GOBIN = $(shell pwd)/bin
 OWNER ?= elastic

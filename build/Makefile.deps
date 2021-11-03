@@ -1,6 +1,6 @@
 VERSION_DIR:=$(GOBIN)/versions
 
-VERSION_GORELEASER:=v0.136.0
+VERSION_GORELEASER:=v0.184.0
 
 $(GOBIN):
 	@ mkdir -p $(GOBIN)
@@ -14,4 +14,4 @@ $(VERSION_DIR)/.version-goreleaser-$(VERSION_GORELEASER): | $(VERSION_DIR)
 
 $(GOBIN)/goreleaser: $(VERSION_DIR)/.version-goreleaser-$(VERSION_GORELEASER)
 	@ echo "-> Installing goreleaser..."
-	@ curl -sfL https://install.goreleaser.com/github.com/goreleaser/goreleaser.sh| sh -s -- -b $(GOBIN) $(VERSION_GORELEASER)
+	@ go install github.com/goreleaser/goreleaser@$(VERSION_GORELEASER)
