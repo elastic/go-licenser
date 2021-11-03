@@ -20,9 +20,6 @@ install:
 
 before_build:
   - go install
-  - golint -set_exit_status .
-  - gofmt -d -e -s .
-  - goimports -d .
 
 build_script:
   - appveyor AddCompilationMessage "Starting Compilation"
