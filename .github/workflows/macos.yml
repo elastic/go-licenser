@@ -1,0 +1,29 @@
+name: macos
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+  macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: install Go
+      uses: actions/setup-go@v3
+      with:
+      go-version: '>=1.17.0'
+
+    - name: Install dependencies
+      run: make deps
+
+    - name: Run build
+      run: make lint
+
+    - name: Run test
+      run: make unit
