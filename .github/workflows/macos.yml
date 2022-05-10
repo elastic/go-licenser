@@ -23,8 +23,10 @@ jobs:
     - name: Install dependencies
       run: |
         make deps
+        whereis golint
         ls -ltra $GOBIN
         echo "$GOBIN"
+        whereis golint
 
     - name: Run build
       run: make build
