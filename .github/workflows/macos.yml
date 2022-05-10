@@ -23,6 +23,12 @@ jobs:
     - name: Install dependencies
       run: GOBIN=$PWD/bin make deps
 
+    - name: Run build
+      run: |
+        ls -ltra $PWD/bin
+        ls -ltra $GOBIN
+        make lint
+
     - name: Run lint
       run: make lint
 
