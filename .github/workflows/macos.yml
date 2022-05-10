@@ -21,9 +21,9 @@ jobs:
         go-version: '>=1.17.0'
 
     - name: Install dependencies
-      run: make deps
+      run: GOBIN=$PWD/bin make deps
 
-    - name: Run build
+    - name: Run lint
       run: make lint
 
     - name: Run test
