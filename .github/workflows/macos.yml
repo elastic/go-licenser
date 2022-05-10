@@ -22,15 +22,16 @@ jobs:
 
     - name: Install dependencies
       run: |
-        GOBIN=$PWD/bin
+        export GOBIN=$PWD/bin
         mkdir -p $GOBIN
+        ls -ltra $GOBIN/bin
+        echo "$GOBIN/bin"
         make deps
+        ls -ltra $GOBIN/bin
+        echo "$GOBIN/bin"
 
     - name: Run build
-      run: |
-        ls -ltra $PWD/bin || true
-        ls -ltra $GOBIN
-        make lint
+      run: make build
 
     - name: Run lint
       run: make lint
