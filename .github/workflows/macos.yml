@@ -23,16 +23,8 @@ jobs:
     - name: Install dependencies
       run: make deps
 
-    - name: Debug dependencies
-      run: |
-        echo "$GOBIN"
-        whereis golint || true
-
     - name: Run build
       run: make build
-
-    - name: Run lint
-      run: make lint
 
     - name: Run test
       run: make unit
