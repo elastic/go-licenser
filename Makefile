@@ -45,7 +45,7 @@ help:
 .PHONY: deps
 deps:
 ifndef GOLINT_PRESENT
-	go get -u golang.org/x/lint/golint
+	@ go get -u golang.org/x/lint/golint
 endif
 ifndef GOIMPORTS_PRESENT
 	@ go get -u golang.org/x/tools/cmd/goimports
