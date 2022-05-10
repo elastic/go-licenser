@@ -21,11 +21,14 @@ jobs:
         go-version: '>=1.17.0'
 
     - name: Install dependencies
-      run: GOBIN=$PWD/bin make deps
+      run: |
+        GOBIN=$PWD/bin
+        mkdir -p $GOBIN
+        make deps
 
     - name: Run build
       run: |
-        ls -ltra $PWD/bin
+        ls -ltra $PWD/bin || true
         ls -ltra $GOBIN
         make lint
 
