@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         export GOBIN=$PWD/bin
-        mkdir -p $GOBIN
+        mkdir -p $GOBIN/bin
         ls -ltra $GOBIN/bin
         echo "$GOBIN/bin"
         make deps
