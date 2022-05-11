@@ -18,13 +18,13 @@ jobs:
     - name: install Go
       uses: actions/setup-go@v3
       with:
-      go-version: '>=1.17.0'
+        go-version: '>=1.17.0'
 
     - name: Install dependencies
       run: make deps
 
     - name: Run build
-      run: make lint
+      run: make build
 
     - name: Run test
       run: make unit
