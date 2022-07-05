@@ -46,6 +46,18 @@ pipeline {
             values 'ubuntu-18 && immutable', 'orka && darwin && x86_64'
           }
         }
+        excludes {
+          exclude {
+            axis {
+              name 'GO_VERSION'
+              values '1.16', '1.15', '1.14', '1.13'
+            }
+            axis {
+              name 'PLATFORM'
+              values 'orka && darwin && x86_64'
+            }
+          }
+        }
         stages {
           stage('Test') {
             agent { label "${PLATFORM}" }
