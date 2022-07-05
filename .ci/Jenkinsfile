@@ -43,7 +43,19 @@ pipeline {
           }
           axis {
             name 'PLATFORM'
-            values 'ubuntu-18 && immutable'
+            values 'ubuntu-18 && immutable', 'macos11 && x86_64'
+          }
+        }
+        excludes {
+          exclude {
+            axis {
+              name 'GO_VERSION'
+              values '1.16', '1.15', '1.14', '1.13'
+            }
+            axis {
+              name 'PLATFORM'
+              values 'macos11 && x86_64'
+            }
           }
         }
         stages {
