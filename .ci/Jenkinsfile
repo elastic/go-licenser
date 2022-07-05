@@ -43,7 +43,7 @@ pipeline {
           }
           axis {
             name 'PLATFORM'
-            values 'ubuntu-18 && immutable'
+            values 'ubuntu-18 && immutable', 'orka && darwin && x86_64'
           }
         }
         stages {
