@@ -22,7 +22,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -83,7 +82,7 @@ func dcopy(src, dest string, info os.FileInfo) error {
 		return err
 	}
 
-	infs, err := ioutil.ReadDir(src)
+	infs, err := os.ReadDir(src)
 	if err != nil {
 		return err
 	}

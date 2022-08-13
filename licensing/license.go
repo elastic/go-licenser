@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"errors"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -67,13 +66,13 @@ func RewriteFileWithHeader(path string, header []byte) error {
 		return err
 	}
 
-	origin, err := ioutil.ReadFile(path)
+	origin, err := os.ReadFile(path)
 	if err != nil {
 		return err
 	}
 
 	data := RewriteWithHeader(origin, header)
-	return ioutil.WriteFile(path, data, info.Mode())
+	return os.WriteFile(path, data, info.Mode())
 }
 
 // RewriteWithHeader rewrites the src byte buffers header with the new header.
