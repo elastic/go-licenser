@@ -272,6 +272,6 @@ func stringInSlice(a string, list []string) bool {
 }
 
 func usageFlag() {
-	fmt.Fprintf(os.Stderr, usageText)
+	fmt.Fprint(os.Stderr, usageText)
 	flag.PrintDefaults()
 }
