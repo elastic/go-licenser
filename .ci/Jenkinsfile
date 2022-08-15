@@ -67,7 +67,6 @@ pipeline {
                 unstash 'source'
                 withGoEnv(version: "${GO_VERSION}"){
                   dir("${BASE_DIR}"){
-                    sh(label: "deps for ${GO_VERSION} in ${PLATFORM}", script: 'make deps')
                     sh(label: "lint for ${GO_VERSION} in ${PLATFORM}", script: 'make lint')
                     sh(label: "unit for ${GO_VERSION} in ${PLATFORM}", script: 'make unit')
                   }
