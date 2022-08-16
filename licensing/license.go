@@ -29,7 +29,7 @@ import (
 
 var (
 	startPrefixes = []string{"// Copyright", "// copyright", "// Licensed", "// licensed", "// ELASTICSEARCH CONFIDENTIAL"}
-	endPrefixes   = []string{"package ", "// Package ", "// +build ", "// Code generated", "// code generated"}
+	endPrefixes   = []string{"package ", "// Package ", "// +build ", "// Code generated", "// code generated", "//go:"}
 
 	errHeaderIsTooShort = errors.New("header is too short")
 )

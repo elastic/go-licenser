@@ -15,6 +15,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+//go:build mytag
 // +build mytag
 
 package testdata

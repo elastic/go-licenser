@@ -492,7 +492,7 @@ package mypackage
 // Use of this source code is governed by Apache License 2.0 that can
 // be found in the LICENSE file.
 
-`[1:] + "// +build mybuildtag\n\n" + `
+`[1:] + "//go:build mytag\n\n// +build mybuildtag\n\n" + `
 package mypackage
 `[1:],
 				),
