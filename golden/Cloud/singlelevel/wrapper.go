@@ -13,6 +13,7 @@
 // this material is strictly forbidden unless prior written
 // permission is obtained from Elasticsearch B.V.
 
+//go:build mytag
 // +build mytag
 
 package testdata

@@ -9,7 +9,6 @@ pipeline {
     BASE_DIR = "src/github.com/elastic/${env.REPO}"
     JOB_GIT_CREDENTIALS = "f6c7695a-671e-4f4f-a331-acdce44ff9ba"
     PIPELINE_LOG_LEVEL = 'INFO'
-    GO111MODULE = 'auto'
   }
   options {
     timeout(time: 1, unit: 'HOURS')
@@ -39,7 +38,7 @@ pipeline {
         axes {
           axis {
             name 'GO_VERSION'
-            values '1.17', '1.16', '1.15', '1.14', '1.13'
+            values '1.19', '1.18', '1.17'
           }
           axis {
             name 'PLATFORM'
@@ -50,7 +49,7 @@ pipeline {
           exclude {
             axis {
               name 'GO_VERSION'
-              values '1.16', '1.15', '1.14', '1.13'
+              values '1.19', '1.18', '1.17'
             }
             axis {
               name 'PLATFORM'
@@ -67,7 +66,6 @@ pipeline {
                 unstash 'source'
                 withGoEnv(version: "${GO_VERSION}"){
                   dir("${BASE_DIR}"){
-                    sh(label: "deps for ${GO_VERSION} in ${PLATFORM}", script: 'make deps')
                     sh(label: "lint for ${GO_VERSION} in ${PLATFORM}", script: 'make lint')
                     sh(label: "unit for ${GO_VERSION} in ${PLATFORM}", script: 'make unit')
                   }

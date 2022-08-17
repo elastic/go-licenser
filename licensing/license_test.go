@@ -20,7 +20,6 @@ package licensing
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -227,7 +226,7 @@ func somefunc() {}
 }
 
 func CreateFileObtainName(t *testing.T) (string, func()) {
-	f, err := ioutil.TempFile(os.TempDir(), "TestHelperCreateFile")
+	f, err := os.CreateTemp(os.TempDir(), "TestHelperCreateFile")
 	if err != nil {
 		t.Error("failed creating temp file", err)
 	}
@@ -241,7 +240,7 @@ func writeContents(t *testing.T, path string, content []byte) {
 		t.Fatal(err)
 	}
 
-	if err := ioutil.WriteFile(path, content, info.Mode()); err != nil {
+	if err := os.WriteFile(path, content, info.Mode()); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -388,7 +387,7 @@ package main
 			}
 
 			if tt.want != nil {
-				got, err := ioutil.ReadFile(tt.args.path)
+				got, err := os.ReadFile(tt.args.path)
 				if err != nil {
 					t.Error("failed reading contents of temp file")
 				}
@@ -493,7 +492,7 @@ package mypackage
 // Use of this source code is governed by Apache License 2.0 that can
 // be found in the LICENSE file.
 
-`[1:] + "// +build mybuildtag\n\n" + `
+`[1:] + "//go:build mytag\n\n// +build mybuildtag\n\n" + `
 package mypackage
 `[1:],
 				),

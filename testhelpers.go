@@ -22,7 +22,6 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -83,7 +82,7 @@ func dcopy(src, dest string, info os.FileInfo) error {
 		return err
 	}
 
-	infs, err := ioutil.ReadDir(src)
+	infs, err := os.ReadDir(src)
 	if err != nil {
 		return err
 	}
@@ -130,7 +129,7 @@ func hashDirectories(t *testing.T, src, dest string) {
 
 	t.Log("===========================")
 	var srcSum, dstSum = srcHash.Sum(nil), dstHash.Sum(nil)
-	if bytes.Compare(srcSum, dstSum) != 0 {
+	if !bytes.Equal(srcSum, dstSum) {
 		t.Errorf("Contents of %s are not the same as %s", src, dest)
 		t.Errorf("src folder hash: %x", srcSum)
 		t.Errorf("dst folder hash: %x", dstSum)
