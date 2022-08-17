@@ -21,6 +21,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sort"
@@ -209,7 +210,7 @@ func reportFile(out io.Writer, f string) {
 
 func walk(p, ext, license string, headerBytes []byte, exclude []string, dry bool, out io.Writer) error {
 	var err error
-	filepath.Walk(p, func(path string, info os.FileInfo, walkErr error) error {
+	filepath.WalkDir(p, func(path string, info fs.DirEntry, walkErr error) error {
 		if walkErr != nil {
 			err = &Error{err: walkErr, code: exitFailedToWalkPath}
 			return walkErr
@@ -235,7 +236,7 @@ func walk(p, ext, license string, headerBytes []byte, exclude []string, dry bool
 	return err
 }
 
-func addOrCheckLicense(path, ext, license string, headerBytes []byte, info os.FileInfo, dry bool, out io.Writer) error {
+func addOrCheckLicense(path, ext, license string, headerBytes []byte, info fs.DirEntry, dry bool, out io.Writer) error {
 	if info.IsDir() || filepath.Ext(path) != ext {
 		return nil
 	}
