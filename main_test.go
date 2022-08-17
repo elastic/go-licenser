@@ -21,6 +21,7 @@ import (
 	"bytes"
 	"errors"
 	"flag"
+	"os"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -281,4 +282,17 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 			}
 		})
 	}
+}
+
+func BenchmarkRun(b *testing.B) {
+	args := []string{"."}
+	excluded := append(defaultExludedDirs, "golden")
+
+	b.Run("dot", func(b *testing.B) {
+		b.ReportAllocs()
+
+		for i := 0; i < b.N; i++ {
+			run(args, defaultLicense, defaultLicensor, excluded, defaultExt, false, os.Stdout)
+		}
+	})
 }
