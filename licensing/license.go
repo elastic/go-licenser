@@ -37,18 +37,26 @@ var (
 // ContainsHeader reads the first N lines of a file and checks if the header
 // matches the one that is expected
 func ContainsHeader(r io.Reader, headerLines []string) bool {
-	var found []string
 	var scanner = bufio.NewScanner(r)
+	var i int
 
-	for scanner.Scan() {
-		found = append(found, scanner.Text())
+	for i = 0; scanner.Scan(); i++ {
+		line := scanner.Bytes()
+
+		// end of license, break out of the loop
+		if i == len(headerLines) {
+			break
+		}
+
+		// compare line by line without storing the whole file
+		// in memory
+		if !bytes.Equal(line, []byte(headerLines[i])) {
+			return false
+		}
 	}
 
-	if len(found) < len(headerLines) {
-		return false
-	}
-
-	if !reflect.DeepEqual(found[:len(headerLines)], headerLines) {
+	// file is shorter than license
+	if i < len(headerLines) {
 		return false
 	}
 
