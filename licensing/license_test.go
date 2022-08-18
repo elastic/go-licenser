@@ -218,11 +218,20 @@ func somefunc() {}
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ContainsHeader(tt.args.r, tt.args.header); got != tt.want {
+			if got := ContainsHeaderString(tt.args.r, tt.args.header); got != tt.want {
 				t.Errorf("ContainsHeader() = %v, want %v", got, tt.want)
 			}
 		})
 	}
+}
+
+func ContainsHeaderString(r io.Reader, headerLines []string) bool {
+	headerLinesBytes := make([][]byte, 0, len(headerLines))
+	for _, v := range headerLines {
+		headerLinesBytes = append(headerLinesBytes, []byte(v))
+	}
+
+	return ContainsHeader(r, headerLinesBytes)
 }
 
 func CreateFileObtainName(t *testing.T) (string, func()) {

@@ -60,7 +60,7 @@ func init() {
 
 // ContainsHeader reads the first N lines of a file and checks if the header
 // matches the one that is expected
-func ContainsHeader(r io.Reader, headerLines []string) bool {
+func ContainsHeader(r io.Reader, headerLines [][]byte) bool {
 	var scanner = bufio.NewScanner(r)
 	var i int
 
@@ -78,7 +78,7 @@ func ContainsHeader(r io.Reader, headerLines []string) bool {
 
 		// compare line by line without storing the whole file
 		// in memory
-		if !bytes.Equal(line, []byte(headerLines[i])) {
+		if !bytes.Equal(line, headerLines[i]) {
 			return false
 		}
 	}

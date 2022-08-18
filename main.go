@@ -18,6 +18,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"io"
@@ -127,10 +128,10 @@ func run(args []string, license, licensor string, exclude []string, ext string, 
 
 	var headerBytes []byte
 	for i, line := range header {
-		if strings.Contains(line, "%s") {
-			header[i] = fmt.Sprintf(line, licensor)
+		if bytes.Contains(line, []byte("%s")) {
+			header[i] = bytes.ReplaceAll(line, []byte("%s"), []byte(licensor))
 		}
-		headerBytes = append(headerBytes, []byte(header[i])...)
+		headerBytes = append(headerBytes, header[i]...)
 		headerBytes = append(headerBytes, []byte("\n")...)
 	}
 
