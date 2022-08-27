@@ -34,10 +34,7 @@ var (
 
 	errHeaderIsTooShort = errors.New("header is too short")
 
-	// Supported licenses size are: 173, 232, 240, 636 and 745.
-	// We use a buffer of 768 to make sure everything fit
-	// without any additional allocation.
-	defaulBufSize = 768
+	defaulBufSize int
 	bufPool       = sync.Pool{
 		New: func() interface{} {
 			buf := make([]byte, defaulBufSize)
@@ -45,6 +42,21 @@ var (
 		},
 	}
 )
+
+func init() {
+	// Iterate over the supported licenses to make sure everything fit
+	// without any additional allocation.
+	for _, v := range Headers {
+		var l int
+		for _, v2 := range v {
+			l += len(v2)
+		}
+
+		if l > defaulBufSize {
+			defaulBufSize = l
+		}
+	}
+}
 
 // ContainsHeader reads the first N lines of a file and checks if the header
 // matches the one that is expected
