@@ -25,6 +25,7 @@ import (
 	"os"
 	"reflect"
 	"strings"
+	"sync"
 )
 
 var (
@@ -32,13 +33,40 @@ var (
 	endPrefixes   = []string{"package ", "// Package ", "// +build ", "// Code generated", "// code generated", "//go:"}
 
 	errHeaderIsTooShort = errors.New("header is too short")
+
+	defaulBufSize int
+	bufPool       = sync.Pool{
+		New: func() interface{} {
+			buf := make([]byte, defaulBufSize)
+			return buf
+		},
+	}
 )
+
+func init() {
+	// Iterate over the supported licenses to make sure everything fit
+	// without any additional allocation.
+	for _, v := range Headers {
+		var l int
+		for _, v2 := range v {
+			l += len(v2)
+		}
+
+		if l > defaulBufSize {
+			defaulBufSize = l
+		}
+	}
+}
 
 // ContainsHeader reads the first N lines of a file and checks if the header
 // matches the one that is expected
 func ContainsHeader(r io.Reader, headerLines []string) bool {
 	var scanner = bufio.NewScanner(r)
 	var i int
+
+	buf := bufPool.Get().([]byte)
+	defer bufPool.Put(buf)
+	scanner.Buffer(buf, defaulBufSize)
 
 	for i = 0; scanner.Scan(); i++ {
 		line := scanner.Bytes()
