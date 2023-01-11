@@ -31,17 +31,19 @@ Usage: go-licenser [flags] [path]
 
 Options:
 
-  -d	skips rewriting files and returns exitcode 1 if any discrepancies are found.
+  -copyright
+        sets the copyright string as the first line
+  -d    skips rewriting files and returns exitcode 1 if any discrepancies are found.
   -exclude value
-    	path to exclude (can be specified multiple times).
+        path to exclude (can be specified multiple times).
   -ext string
-    	sets the file extension to scan for. (default ".go")
+        sets the file extension to scan for. (default ".go")
   -license string
-    	sets the license type to check: ASL2, ASL2-Short, Cloud, Elastic, Elasticv2 (default "ASL2")
+        sets the license type to check: ASL2, ASL2-Short, Cloud, Elastic, Elasticv2 (default "ASL2")
   -licensor string
-    	sets the name of the licensor (default "Elasticsearch B.V.")
+        sets the name of the licensor (default "Elasticsearch B.V.")
   -version
-    	prints out the binary version.
+        prints out the binary version.
 ```
 
 ## Contributing
