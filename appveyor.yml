@@ -10,7 +10,7 @@ clone_folder: c:\gopath\src\github.com\elastic\go-licenser
 
 environment:
   CGO_ENABLED: 0
-stack: go 1.17
+stack: go 1.19
 
 # Build
 
