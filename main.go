@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/elastic/go-licenser/licensing"
 )
@@ -61,6 +62,7 @@ Options:
 
 var (
 	dryRun             bool
+	copyright          bool
 	showVersion        bool
 	extension          string
 	args               []string
@@ -95,6 +97,7 @@ func initFlags() {
 	flag.Var(&exclude, "exclude", `path to exclude (can be specified multiple times).`)
 	flag.BoolVar(&dryRun, "d", false, `skips rewriting files and returns exitcode 1 if any discrepancies are found.`)
 	flag.BoolVar(&showVersion, "version", false, `prints out the binary version.`)
+	flag.BoolVar(&copyright, "copyright", false, "sets the copyright string as the first line")
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
 	flag.StringVar(&license, "license", defaultLicense, fmt.Sprintf("sets the license type to check: %s", strings.Join(licenseTypes, ", ")))
 	flag.StringVar(&licensor, "licensor", defaultLicensor, "sets the name of the licensor")
@@ -111,7 +114,7 @@ func main() {
 		return
 	}
 
-	err := run(args, license, licensor, exclude, extension, dryRun, os.Stdout)
+	err := run(args, license, licensor, exclude, extension, copyright, dryRun, os.Stdout)
 	if err != nil && err.Error() != "<nil>" {
 		fmt.Fprint(os.Stderr, err)
 	}
@@ -119,13 +122,17 @@ func main() {
 	os.Exit(Code(err))
 }
 
-func run(args []string, license, licensor string, exclude []string, ext string, dry bool, out io.Writer) error {
+func run(args []string, license, licensor string, exclude []string, ext string, copyright bool, dry bool, out io.Writer) error {
 	header, ok := licensing.Headers[license]
 	if !ok {
 		return &Error{err: fmt.Errorf("unknown license: %s", license), code: errUnknownLicense}
 	}
 
 	var headerBytes []byte
+	if copyright {
+	        year, _, _ := time.Now().Date()
+		headerBytes = append(headerBytes, []byte(fmt.Sprintf("// Copyright %d %s\n", year, licensor))...)
+	}
 	for i, line := range header {
 		if strings.Contains(line, "%s") {
 			header[i] = fmt.Sprintf(line, licensor)

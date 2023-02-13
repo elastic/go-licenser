@@ -36,6 +36,7 @@ func Test_run(t *testing.T) {
 		licensor string
 		exclude  []string
 		ext      string
+		copyright bool
 		dry      bool
 	}
 	tests := []struct {
@@ -54,6 +55,7 @@ func Test_run(t *testing.T) {
 				licensor: defaultLicensor,
 				exclude:  []string{"excludedpath", "x-pack", "x-pack-v2", "cloud"},
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      true,
 			},
 			want: 1,
@@ -76,6 +78,7 @@ testdata/singlelevel/wrapper.go: is missing the license header
 				license:  "Elastic",
 				licensor: defaultLicensor,
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      true,
 			},
 			want: 1,
@@ -105,6 +108,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				license:  "Elasticv2",
 				licensor: defaultLicensor,
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      true,
 			},
 			want: 1,
@@ -134,6 +138,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				license:  "Cloud",
 				licensor: defaultLicensor,
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      true,
 			},
 			want: 1,
@@ -163,6 +168,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				license:  defaultLicense,
 				licensor: defaultLicensor,
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      false,
 			},
 			want: 2,
@@ -175,6 +181,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				license:  "foo",
 				licensor: defaultLicensor,
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      false,
 			},
 			want: 7,
@@ -188,6 +195,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				licensor: defaultLicensor,
 				exclude:  []string{"excludedpath"},
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      false,
 			},
 			want:       0,
@@ -201,6 +209,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				licensor: defaultLicensor,
 				exclude:  []string{"excludedpath"},
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      false,
 			},
 			want:       0,
@@ -214,6 +223,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				licensor: defaultLicensor,
 				exclude:  []string{"excludedpath"},
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      false,
 			},
 			want:       0,
@@ -227,6 +237,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				licensor: defaultLicensor,
 				exclude:  []string{"excludedpath"},
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      false,
 			},
 			want:       0,
@@ -240,6 +251,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				licensor: defaultLicensor,
 				exclude:  []string{"excludedpath"},
 				ext:      defaultExt,
+                                copyright: false,
 				dry:      false,
 			},
 			want:       0,
@@ -253,7 +265,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 			}
 
 			var buf = new(bytes.Buffer)
-			var err = run(tt.args.args, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf)
+			var err = run(tt.args.args, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.copyright, tt.args.dry, buf)
 			if !reflect.DeepEqual(err, tt.err) {
 				t.Errorf("run() error = %v, wantErr %v", err, tt.err)
 				return
@@ -274,7 +286,7 @@ testdata/x-pack-v2/wrong.go: is missing the license header
 				goldenDirectory := filepath.Join("golden", tt.args.license)
 				if *update {
 					copyFixtures(t, goldenDirectory)
-					if err := run([]string{goldenDirectory}, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.dry, buf); err != nil {
+					if err := run([]string{goldenDirectory}, tt.args.license, tt.args.licensor, tt.args.exclude, tt.args.ext, tt.args.copyright, tt.args.dry, buf); err != nil {
 						t.Fatal(err)
 					}
 				}
@@ -292,7 +304,7 @@ func BenchmarkRun(b *testing.B) {
 		b.ReportAllocs()
 
 		for i := 0; i < b.N; i++ {
-			run(args, defaultLicense, defaultLicensor, excluded, defaultExt, false, os.Stdout)
+			run(args, defaultLicense, defaultLicensor, excluded, defaultExt, false, false, os.Stdout)
 		}
 	})
 }
