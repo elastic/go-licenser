@@ -38,7 +38,7 @@ pipeline {
         axes {
           axis {
             name 'GO_VERSION'
-            values '1.19', '1.18', '1.17'
+            values '1.20', '1.19'
           }
           axis {
             name 'PLATFORM'
@@ -49,7 +49,7 @@ pipeline {
           exclude {
             axis {
               name 'GO_VERSION'
-              values '1.19', '1.18', '1.17'
+              values '1.20', '1.19'
             }
             axis {
               name 'PLATFORM'
