@@ -69,3 +69,18 @@ var Headers = map[string][]string{
 		`// permission is obtained from Elasticsearch B.V.`,
 	},
 }
+
+// HeadersMultiline is a multiline variant map of Headers
+var HeadersMultiline = func() map[string][]string {
+	headersMultiline := map[string][]string{}
+	for licence, headerLines := range Headers {
+		multiLineHeaderLines := []string{`/*`}
+		for _, headerLine := range headerLines {
+			multiHeaderLine := ` *` + headerLine[2:]
+			multiLineHeaderLines = append(multiLineHeaderLines, multiHeaderLine)
+		}
+		multiLineHeaderLines = append(multiLineHeaderLines, ` */`)
+		headersMultiline[licence] = multiLineHeaderLines
+	}
+	return headersMultiline
+}()
