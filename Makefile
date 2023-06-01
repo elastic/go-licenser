@@ -7,7 +7,7 @@ TEST_UNIT_PACKAGE ?= ./...
 RELEASED = $(shell git tag -l $(VERSION))
 DEFAULT_LDFLAGS ?= -X main.version=$(VERSION)-dev -X main.commit=$(shell git rev-parse HEAD)
 VERSION_STATICCHECK = 2022.1.3
-VERSION_GOIMPORT = v0.1.12
+VERSION_GOIMPORT = v0.2.0
 VERSION_GORELEASER:=v0.184.0
 
 define HELP
