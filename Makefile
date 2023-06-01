@@ -6,7 +6,7 @@ TEST_UNIT_FLAGS ?= -timeout 10s -p 4 -race -cover
 TEST_UNIT_PACKAGE ?= ./...
 RELEASED = $(shell git tag -l $(VERSION))
 DEFAULT_LDFLAGS ?= -X main.version=$(VERSION)-dev -X main.commit=$(shell git rev-parse HEAD)
-VERSION_STATICCHECK = 2022.1.3
+VERSION_STATICCHECK = 2023.1.3
 VERSION_GOIMPORT = v0.1.12
 VERSION_GORELEASER:=v0.184.0
 
