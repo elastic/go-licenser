@@ -32,7 +32,7 @@ spec:
     apiVersion: buildkite.elastic.dev/v1
     kind: Pipeline
     metadata:
-      name: elastic-agent
+      name: go-licenser
       description: Buildkite pipeline for the Go Licenser project
     spec:
       repository: elastic/go-licenser
