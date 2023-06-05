@@ -1,5 +1,17 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/buildkite/pipeline-schema/main/schema.json
 
 steps:
-  - label: "Example test"
-    command: echo "Hello2!"
+  - label: ":linux: Test matrix"
+    key: test-matrix
+    matrix:
+      setup:
+        go_version:
+          - "1.20"
+          - "1.19"
+    command:
+      - "echo {{matrix.setup.go_version}}"
+      # - ".buildkite/scripts/test-on-platform.sh"
+    agents:
+      image: "golang:{{matrix.setup.go_version}}"
+      cpu: "8"
+      memory: "4G"
