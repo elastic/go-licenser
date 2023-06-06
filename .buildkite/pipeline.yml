@@ -3,7 +3,7 @@
 steps:
   - group: ":linux: Test matrix group"
     steps:
-      - label: ":linux: Test matrix. Go version {{matrix.go_version}}"
+      - label: ":linux: Test matrix. Go {{matrix.go_version}}"
         key: test-matrix
         matrix:
           setup:
