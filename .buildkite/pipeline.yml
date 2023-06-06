@@ -9,9 +9,9 @@ steps:
           - "1.20"
           - "1.19"
     command:
-      - echo {{matrix.setup.go_version}}
+      - echo {{matrix.go_version}}
       # - ".buildkite/scripts/test-on-platform.sh"
     agents:
-      image: golang:{{matrix.setup.go_version}}
+      image: golang:{{matrix.go_version}}
       cpu: "8"
       memory: "4G"
