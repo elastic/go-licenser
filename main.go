@@ -69,6 +69,7 @@ var (
 	license            string
 	licensor           string
 	exclude            sliceFlag
+	multiline          bool
 	defaultExludedDirs = []string{"vendor", ".git"}
 )
 
@@ -101,6 +102,7 @@ func initFlags() {
 	flag.StringVar(&extension, "ext", defaultExt, "sets the file extension to scan for.")
 	flag.StringVar(&license, "license", defaultLicense, fmt.Sprintf("sets the license type to check: %s", strings.Join(licenseTypes, ", ")))
 	flag.StringVar(&licensor, "licensor", defaultLicensor, "sets the name of the licensor")
+	flag.BoolVar(&multiline, "multiline", false, `uses multiline comments`)
 	flag.Usage = usageFlag
 	flag.Parse()
 	args = flag.Args()
@@ -127,10 +129,13 @@ func run(args []string, license, licensor string, exclude []string, ext string, 
 	if !ok {
 		return &Error{err: fmt.Errorf("unknown license: %s", license), code: errUnknownLicense}
 	}
+	if multiline {
+		header = licensing.HeadersMultiline[license]
+	}
 
 	var headerBytes []byte
 	if copyright {
-	        year, _, _ := time.Now().Date()
+		year, _, _ := time.Now().Date()
 		headerBytes = append(headerBytes, []byte(fmt.Sprintf("// Copyright %d %s\n", year, licensor))...)
 	}
 	for i, line := range header {
