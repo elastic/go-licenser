@@ -56,6 +56,16 @@ func init() {
 			defaulBufSize = l
 		}
 	}
+	for _, v := range HeadersMultiline {
+		var l int
+		for _, v2 := range v {
+			l += len(v2)
+		}
+
+		if l > defaulBufSize {
+			defaulBufSize = l
+		}
+	}
 }
 
 // ContainsHeader reads the first N lines of a file and checks if the header
