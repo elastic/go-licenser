@@ -1,0 +1,47 @@
+---
+name: ci
+
+on:
+  push:
+    branches: 
+      - main
+  pull_request:
+  merge_group:
+
+# limit the access of the generated GITHUB_TOKEN
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: make lint
+
+  test:
+    needs: lint
+    strategy:
+      fail-fast: false
+      matrix:
+        go-version: ['1.22', '1.23', '1.24']
+    runs-on: 'ubuntu-22.04'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+      - run: make unit
+
+  snapshot:
+    needs: lint
+    runs-on: 'ubuntu-22.04'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: make snapshot
