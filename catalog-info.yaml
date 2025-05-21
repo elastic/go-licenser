@@ -8,7 +8,7 @@ metadata:
   description: Go Licenser - Adds a license header to any Go source files
 
 spec:
-  type: library
+  type: tool
   owner: group:ingest-fp
   system: platform-ingest
   lifecycle: production
