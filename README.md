@@ -42,6 +42,8 @@ Options:
         sets the license type to check: ASL2, ASL2-Short, Cloud, Elastic, Elasticv2 (default "ASL2")
   -licensor string
         sets the name of the licensor (default "Elasticsearch B.V.")
+  -multiline
+        uses multiline comments
   -version
         prints out the binary version.
 ```
