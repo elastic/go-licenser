@@ -9,6 +9,6 @@ metadata:
 
 spec:
   type: tool
-  owner: group:ingest-fp
+  owner: group:streams
   system: platform-ingest
   lifecycle: production
